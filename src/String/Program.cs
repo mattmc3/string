@@ -16,6 +16,11 @@ public static class StringApp {
             return 0;
         }
 
+        if (command is "--version" or "-v") {
+            output.WriteLine($"string {StringVersion.Value}");
+            return 0;
+        }
+
         var rest = args[1..];
 
         try {

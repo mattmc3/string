@@ -32,6 +32,10 @@ publish:
 publish-native:
     dotnet publish src/String/String.csproj -c Release --self-contained
 
+# Publish AOT binary for a specific RID (e.g. just publish-rid osx-arm64)
+publish-rid rid:
+    dotnet publish src/String/String.csproj -c Release --self-contained -r {{rid}} -o out/
+
 # Watch and rebuild on changes
 watch:
     dotnet watch --project src/String/String.csproj

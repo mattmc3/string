@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>string</AssemblyName>
+    <Version>0.0.1</Version>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PublishDir>$(MSBuildProjectDirectory)/../../publish</PublishDir>
