@@ -49,4 +49,4 @@ This tool is modeled after the [fish shell `string` builtin](https://fishshell.c
 ## See also
 
 - [fish `string` documentation](https://fishshell.com/docs/current/cmds/string.html)
-- [DEVELOPMENT.md](DEVELOPMENT.md) — build, test, and project structure
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — build, test, and project structure
