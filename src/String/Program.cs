@@ -35,6 +35,7 @@ public static class StringApp {
             "join" => JoinCommand.Run(rest, stdin, output, error),
             "join0" => Join0Command.Run(rest, stdin, output, error),
             "match" => MatchCommand.Run(rest, stdin, output, error),
+            "collect" => CollectCommand.Run(rest, stdin, output, error),
             _ => UnknownCommand(command, error),
         };
     }
@@ -57,6 +58,7 @@ public static class StringApp {
         output.WriteLine("  join     Join strings with delimiter");
         output.WriteLine("  join0    Join strings with NUL");
         output.WriteLine("  match    Match strings against a pattern");
+        output.WriteLine("  collect  Collect strings into a single output");
         output.WriteLine();
         output.WriteLine("Use 'string <command> --help' for more information about a specific command.");
     }
