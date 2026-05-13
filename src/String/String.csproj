@@ -16,5 +16,8 @@
     <LinkerArg Include="-L/opt/homebrew/opt/openssl@3/lib" />
     <LinkerArg Include="-L/opt/homebrew/opt/brotli/lib" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GetOpt\GetOpt.csproj" />
+  </ItemGroup>
 
 </Project>

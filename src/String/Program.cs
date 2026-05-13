@@ -1,24 +1,92 @@
+using GetOpt;
+
 return StringApp.Run(args, Console.Out, Console.Error);
 
 public static class StringApp {
     public static int Run(string[] args, TextWriter output, TextWriter error) {
-        if (args.Length < 2) {
-            error.WriteLine("Usage: string <command> <args...>");
-            error.WriteLine("Commands: upper, lower");
+        if (args.Length < 1) {
+            error.WriteLine("Usage: string <command> [options] [STRING ...]");
+            error.WriteLine("Commands: upper, lower, trim");
             return 1;
         }
 
         var command = args[0];
-        var inputs = args[1..];
+        var rest = args[1..];
 
-        foreach (var s in inputs) {
-            output.WriteLine(command switch {
-                "upper" => s.ToUpperInvariant(),
-                "lower" => s.ToLowerInvariant(),
-                _ => throw new Exception($"Unknown command: {command}")
-            });
+        return command switch {
+            "upper" => RunSimple(rest, s => s.ToUpperInvariant(), output, error),
+            "lower" => RunSimple(rest, s => s.ToLowerInvariant(), output, error),
+            "trim" => RunTrim(rest, output, error),
+            _ => UnknownCommand(command, error),
+        };
+    }
+
+    private static int RunSimple(string[] args, Func<string, string> transform, TextWriter output, TextWriter error) {
+        if (args.Length == 0) {
+            error.WriteLine("error: no strings provided");
+            return 1;
+        }
+        foreach (var s in args) {
+            output.WriteLine(transform(s));
+        }
+        return 0;
+    }
+
+    private static int RunTrim(string[] args, TextWriter output, TextWriter error) {
+        bool left = false, right = false, quiet = false;
+        string? chars = null;
+
+        var parser = new Getopt("+lrqc:", ["left", "right", "quiet", "chars="]);
+        var (opts, inputs) = parser.Parse(args);
+
+        foreach (var opt in opts) {
+            switch (opt.Opt) {
+                case "-l": case "--left": left = true; break;
+                case "-r": case "--right": right = true; break;
+                case "-q": case "--quiet": quiet = true; break;
+                case "-c": case "--chars": chars = opt.Arg; break;
+            }
         }
 
-        return 0;
+        if (!left && !right) {
+            left = true;
+            right = true;
+        }
+
+        bool any = false;
+        foreach (var s in inputs) {
+            var result = chars is null
+                ? Trim(s, left, right)
+                : Trim(s, left, right, chars.ToCharArray());
+            if (!quiet) {
+                output.WriteLine(result);
+            }
+            if (result.Length < s.Length) {
+                any = true;
+            }
+        }
+
+        return any ? 0 : 1;
+    }
+
+    private static string Trim(string s, bool left, bool right) =>
+        (left, right) switch {
+            (true, true) => s.Trim(),
+            (true, false) => s.TrimStart(),
+            (false, true) => s.TrimEnd(),
+            _ => s,
+        };
+
+    private static string Trim(string s, bool left, bool right, char[] chars) =>
+        (left, right) switch {
+            (true, true) => s.Trim(chars),
+            (true, false) => s.TrimStart(chars),
+            (false, true) => s.TrimEnd(chars),
+            _ => s,
+        };
+
+    private static int UnknownCommand(string command, TextWriter error) {
+        error.WriteLine($"error: unknown command '{command}'");
+        return 1;
     }
 }
