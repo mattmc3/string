@@ -8,7 +8,7 @@ build:
 
 # Run the console application
 run *ARGS:
-    dotnet run --project src/String/String.csproj {{ARGS}}
+    dotnet run --project src/String/String.csproj -- {{ARGS}}
 
 # Run the tests
 test *ARGS:

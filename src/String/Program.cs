@@ -17,6 +17,7 @@ public static class StringApp {
             "upper" => RunSimple(rest, s => s.ToUpperInvariant(), output, error),
             "lower" => RunSimple(rest, s => s.ToLowerInvariant(), output, error),
             "trim" => RunTrim(rest, output, error),
+            "repeat" => RunRepeat(rest, output, error),
             _ => UnknownCommand(command, error),
         };
     }
@@ -91,6 +92,52 @@ public static class StringApp {
             (false, true) => s.TrimEnd(chars),
             _ => s,
         };
+
+    private static readonly Getopt RepeatParser = new("n:m:Nq", ["count=", "max=", "no-newline", "quiet"]);
+
+    private static int RunRepeat(string[] args, TextWriter output, TextWriter error) {
+        int count = 0;
+        int max = -1;
+        bool noNewline = false;
+        bool quiet = false;
+
+        var (opts, inputs) = RepeatParser.Parse(args);
+
+        foreach (var opt in opts) {
+            switch (opt.Opt) {
+                case "-n": case "--count": count = int.Parse(opt.Arg!); break;
+                case "-m": case "--max": max = int.Parse(opt.Arg!); break;
+                case "-N": case "--no-newline": noNewline = true; break;
+                case "-q": case "--quiet": quiet = true; break;
+            }
+        }
+
+        if (count <= 0 || inputs.Count == 0) {
+            return 1;
+        }
+
+        bool changes = false;
+        for (int i = 0; i < inputs.Count; i++) {
+            var repeated = string.Concat(Enumerable.Repeat(inputs[i], count));
+            if (max >= 0 && repeated.Length > max) {
+                repeated = repeated[..max];
+            }
+            if (repeated.Length > 0) {
+                changes = true;
+            }
+            if (!quiet) {
+                bool isLast = i == inputs.Count - 1;
+                if (noNewline && isLast) {
+                    output.Write(repeated);
+                }
+                else {
+                    output.WriteLine(repeated);
+                }
+            }
+        }
+
+        return changes ? 0 : 1;
+    }
 
     private static int UnknownCommand(string command, TextWriter error) {
         error.WriteLine($"error: unknown command '{command}'");
