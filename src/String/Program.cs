@@ -2,10 +2,13 @@ using GetOpt;
 using System.Text;
 using System.Text.RegularExpressions;
 
-return StringApp.Run(args, Console.Out, Console.Error);
+return StringApp.Run(args, Console.In, Console.Out, Console.Error);
 
 public static class StringApp {
-    public static int Run(string[] args, TextWriter output, TextWriter error) {
+    public static int Run(string[] args, TextWriter output, TextWriter error) =>
+        Run(args, TextReader.Null, output, error);
+
+    public static int Run(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         if (args.Length < 1) {
             error.WriteLine("Usage: string <command> [options] [STRING ...]");
             error.WriteLine("Commands: upper, lower, trim, repeat, match");
@@ -16,22 +19,30 @@ public static class StringApp {
         var rest = args[1..];
 
         return command switch {
-            "upper" => RunSimple(rest, s => s.ToUpperInvariant(), output, error),
-            "lower" => RunSimple(rest, s => s.ToLowerInvariant(), output, error),
-            "trim" => RunTrim(rest, output, error),
-            "repeat" => RunRepeat(rest, output, error),
-            "match" => RunMatch(rest, output, error),
+            "upper" => RunSimple(rest, stdin, s => s.ToUpperInvariant(), output, error),
+            "lower" => RunSimple(rest, stdin, s => s.ToLowerInvariant(), output, error),
+            "trim" => RunTrim(rest, stdin, output, error),
+            "repeat" => RunRepeat(rest, stdin, output, error),
+            "match" => RunMatch(rest, stdin, output, error),
             _ => UnknownCommand(command, error),
         };
     }
 
+    private static IEnumerable<string> ReadLines(TextReader reader) {
+        string? line;
+        while ((line = reader.ReadLine()) != null) {
+            yield return line;
+        }
+    }
+
     private static readonly Getopt SimpleParser = new("q", ["quiet"]);
 
-    private static int RunSimple(string[] args, Func<string, string> transform, TextWriter output, TextWriter error) {
+    private static int RunSimple(string[] args, TextReader stdin, Func<string, string> transform, TextWriter output, TextWriter error) {
         var (opts, inputs) = SimpleParser.Parse(args);
         bool quiet = opts.Any(o => o.Opt is "-q" or "--quiet");
+        IEnumerable<string> strings = inputs.Count > 0 ? inputs : ReadLines(stdin);
         bool changes = false;
-        foreach (var s in inputs) {
+        foreach (var s in strings) {
             var result = transform(s);
             if (!quiet) {
                 output.WriteLine(result);
@@ -43,7 +54,7 @@ public static class StringApp {
         return changes ? 0 : 1;
     }
 
-    private static int RunTrim(string[] args, TextWriter output, TextWriter error) {
+    private static int RunTrim(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         bool left = false, right = false, quiet = false;
         string? chars = null;
 
@@ -63,8 +74,9 @@ public static class StringApp {
             right = true;
         }
 
+        IEnumerable<string> strings = inputs.Count > 0 ? inputs : ReadLines(stdin);
         bool changes = false;
-        foreach (var s in inputs) {
+        foreach (var s in strings) {
             var result = chars is null
                 ? Trim(s, left, right)
                 : Trim(s, left, right, chars.ToCharArray());
@@ -97,7 +109,7 @@ public static class StringApp {
 
     private static readonly Getopt RepeatParser = new("n:m:Nq", ["count=", "max=", "no-newline", "quiet"]);
 
-    private static int RunRepeat(string[] args, TextWriter output, TextWriter error) {
+    private static int RunRepeat(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         int count = 0;
         int max = -1;
         bool noNewline = false;
@@ -114,13 +126,18 @@ public static class StringApp {
             }
         }
 
-        if (count <= 0 || inputs.Count == 0) {
+        if (count <= 0) {
+            return 1;
+        }
+
+        IReadOnlyList<string> strings = inputs.Count > 0 ? inputs : ReadLines(stdin).ToList();
+        if (strings.Count == 0) {
             return 1;
         }
 
         bool changes = false;
-        for (int i = 0; i < inputs.Count; i++) {
-            var repeated = string.Concat(Enumerable.Repeat(inputs[i], count));
+        for (int i = 0; i < strings.Count; i++) {
+            var repeated = string.Concat(Enumerable.Repeat(strings[i], count));
             if (max >= 0 && repeated.Length > max) {
                 repeated = repeated[..max];
             }
@@ -128,7 +145,7 @@ public static class StringApp {
                 changes = true;
             }
             if (!quiet) {
-                bool isLast = i == inputs.Count - 1;
+                bool isLast = i == strings.Count - 1;
                 if (noNewline && isLast) {
                     output.Write(repeated);
                 }
@@ -143,7 +160,7 @@ public static class StringApp {
 
     private static readonly Getopt MatchParser = new("+aeginrqvm:", ["all", "entire", "ignore-case", "groups-only", "index", "regex", "quiet", "invert", "max-matches="]);
 
-    private static int RunMatch(string[] args, TextWriter output, TextWriter error) {
+    private static int RunMatch(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         bool all = false, entire = false, ignoreCase = false, groupsOnly = false;
         bool useIndex = false, useRegex = false, quiet = false, invert = false;
         int maxMatches = int.MaxValue;
@@ -178,12 +195,11 @@ public static class StringApp {
             return 1;
         }
 
+        IEnumerable<string> strings = rest.Count > 1 ? rest.Skip(1) : ReadLines(stdin);
         bool changes = false;
         int totalMatches = 0;
 
-        for (int i = 1; i < rest.Count; i++) {
-            var s = rest[i];
-
+        foreach (var s in strings) {
             if (invert) {
                 if (!re.IsMatch(s)) {
                     if (!quiet) {

@@ -8,6 +8,14 @@ public class StringAppTests {
         return (exit, stdout.ToString(), stderr.ToString());
     }
 
+    private static (int exitCode, string stdout, string stderr) RunWithStdin(string stdinContent, params string[] args) {
+        var stdout = new StringWriter();
+        var stderr = new StringWriter();
+        var stdin = new StringReader(stdinContent);
+        var exit = StringApp.Run(args, stdin, stdout, stderr);
+        return (exit, stdout.ToString(), stderr.ToString());
+    }
+
     private static string[] Lines(string stdout) =>
         stdout.ReplaceLineEndings("\n").TrimEnd('\n').Split('\n');
 
@@ -282,5 +290,61 @@ public class StringAppTests {
         var (exit, _, stderr) = Run("match");
         Assert.Equal(1, exit);
         Assert.Contains("pattern", stderr);
+    }
+
+    [Fact]
+    public void Stdin_lower() {
+        var (exit, stdout, _) = RunWithStdin("Foo\nBAR\nbaz\n", "lower");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "bar", "baz"], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_upper() {
+        var (exit, stdout, _) = RunWithStdin("Foo\nbar\nBAZ\n", "upper");
+        Assert.Equal(0, exit);
+        Assert.Equal(["FOO", "BAR", "BAZ"], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_trim() {
+        var (exit, stdout, _) = RunWithStdin("  foo  \n  bar  \n", "trim");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "bar"], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_trim_with_flag() {
+        var (exit, stdout, _) = RunWithStdin("  foo  \n  bar  \n", "trim", "-l");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo  ", "bar  "], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_repeat() {
+        var (exit, stdout, _) = RunWithStdin("ab\ncd\n", "repeat", "-n", "2");
+        Assert.Equal(0, exit);
+        Assert.Equal(["abab", "cdcd"], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_match_glob() {
+        var (exit, stdout, _) = RunWithStdin("foobar\nbaz\nfoo\n", "match", "foo*");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foobar", "foo"], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_match_regex() {
+        var (exit, stdout, _) = RunWithStdin("foobar\nbaz\n", "match", "-r", "fo+");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo"], Lines(stdout));
+    }
+
+    [Fact]
+    public void Stdin_args_take_priority_over_stdin() {
+        var (exit, stdout, _) = RunWithStdin("IGNORED\n", "lower", "Foo");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo"], Lines(stdout));
     }
 }
