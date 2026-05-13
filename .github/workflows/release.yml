@@ -7,15 +7,10 @@ on:
 
 jobs:
   build-macos:
-    name: Build macOS (${{ matrix.arch }})
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - runner: macos-latest
-            arch: arm64
-            rid: osx-arm64
-
+    name: Build macOS (arm64)
+    runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -36,12 +31,12 @@ jobs:
           sed -i '' "s/0\.0\.0-dev/${VERSION}/" src/String/Version.cs
 
       - name: Publish native AOT
-        run: just publish-rid ${{ matrix.rid }}
+        run: just publish-rid osx-arm64
 
       - name: Create tarball
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          TARBALL="string-${VERSION}-${{ matrix.rid }}.tar.gz"
+          TARBALL="string-${VERSION}-osx-arm64.tar.gz"
           tar -czf "$TARBALL" -C out string
           echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"
           echo "SHA256=$(shasum -a 256 "$TARBALL" | awk '{print $1}')" >> "$GITHUB_ENV"
