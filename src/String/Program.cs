@@ -29,6 +29,7 @@ public static class StringApp {
             "pad" => PadCommand.Run(rest, stdin, output, error),
             "sub" => SubCommand.Run(rest, stdin, output, error),
             "shorten" => ShortenCommand.Run(rest, stdin, output, error),
+            "replace" => ReplaceCommand.Run(rest, stdin, output, error),
             "split" => SplitCommand.Run(rest, stdin, output, error),
             "split0" => Split0Command.Run(rest, stdin, output, error),
             "join" => JoinCommand.Run(rest, stdin, output, error),
@@ -50,6 +51,7 @@ public static class StringApp {
         output.WriteLine("  pad      Pad strings to a fixed width");
         output.WriteLine("  sub      Extract substrings");
         output.WriteLine("  shorten  Shorten strings to a fixed width with ellipsis");
+        output.WriteLine("  replace  Replace substrings");
         output.WriteLine("  split    Split strings by delimiter");
         output.WriteLine("  split0   Split strings by NUL");
         output.WriteLine("  join     Join strings with delimiter");
