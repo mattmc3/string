@@ -201,15 +201,12 @@ internal static class SplitCore {
                     error.WriteLine($"error: invalid field spec: {part}");
                     return null;
                 }
-                if (from > to) {
+                if (from <= 0 || to <= 0) {
                     error.WriteLine($"error: split: Invalid range value for field '{part}'");
                     return null;
                 }
-                if (from == 0 || to == 0) {
-                    error.WriteLine($"error: split: Invalid fields value '{part}'");
-                    return null;
-                }
-                for (int i = from; i <= to; i++) {
+                int step = from <= to ? 1 : -1;
+                for (int i = from; step > 0 ? i <= to : i >= to; i += step) {
                     fields.Add(i);
                 }
             }
@@ -218,7 +215,7 @@ internal static class SplitCore {
                     error.WriteLine($"error: invalid field spec: {part}");
                     return null;
                 }
-                if (f == 0) {
+                if (f <= 0) {
                     error.WriteLine($"error: split: Invalid fields value '{part}'");
                     return null;
                 }

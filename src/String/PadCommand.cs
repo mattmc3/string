@@ -42,7 +42,11 @@ public static class PadCommand {
                 case "--char":
                 case "--chars":
                     if (opt.Arg!.Length != 1) {
-                        error.WriteLine("error: pad character must be exactly one character");
+                        error.WriteLine($"error: pad: Padding should be a character '{opt.Arg}'");
+                        return 1;
+                    }
+                    if (char.IsControl(opt.Arg[0])) {
+                        error.WriteLine($"error: pad: Invalid padding character of width zero '{opt.Arg}'");
                         return 1;
                     }
                     padChar = opt.Arg[0];
@@ -58,12 +62,12 @@ public static class PadCommand {
             }
         }
 
-        IReadOnlyList<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin).ToList();
+        IReadOnlyList<string> strings = CommandUtils.StringsList(inputs, stdin);
         if (strings.Count == 0) {
             return 1;
         }
 
-        int targetWidth = width ?? strings.Max(s => s.Length);
+        int targetWidth = Math.Max(width ?? 0, strings.Max(s => s.Length));
 
         foreach (var s in strings) {
             string result;

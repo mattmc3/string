@@ -1,9 +1,8 @@
 using GetOpt;
-using System.Text.RegularExpressions;
 
 public static class LengthCommand {
     private static readonly Getopt Parser = new("hqV", ["help", "quiet", "visible"]);
-    private static readonly Regex AnsiEscape = new(@"\x1b(?:\[[0-9;]*[a-zA-Z]|[^[])", RegexOptions.Compiled);
+
 
     public static void WriteHelp(TextWriter output) {
         output.WriteLine("Usage: string length [-h] [-q] [-V] [STRING ...]");
@@ -39,16 +38,19 @@ public static class LengthCommand {
             }
         }
 
-        IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = CommandUtils.Strings(inputs, stdin);
         bool any = false;
         foreach (var s in strings) {
-            var measured = visible ? AnsiEscape.Replace(s, "") : s;
-            int len = measured.Length;
-            if (len > 0) {
-                any = true;
+            if (visible) {
+                foreach (int w in VisualWidth.OfLines(s)) {
+                    if (w > 0) any = true;
+                    if (!quiet) output.WriteLine(w);
+                }
             }
-            if (!quiet) {
-                output.WriteLine(len);
+            else {
+                int len = s.Length;
+                if (len > 0) any = true;
+                if (!quiet) output.WriteLine(len);
             }
         }
 

@@ -70,7 +70,7 @@ internal static class JoinCore {
             }
         }
 
-        IEnumerable<string> source = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> source = CommandUtils.Strings(inputs, stdin);
         var strings = (noEmpty ? source.Where(s => s.Length > 0) : source).ToList();
 
         if (strings.Count == 0) {

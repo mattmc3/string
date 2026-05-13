@@ -21,6 +21,7 @@ public static class ShortenCommand {
         bool quiet = false, noNewline = false, left = false;
         string ellipsis = "…";
         int max = int.MaxValue;
+        bool maxSet = false;
 
         var (opts, inputs) = Parser.Parse(args);
 
@@ -54,13 +55,23 @@ public static class ShortenCommand {
                         return 1;
                     }
                     max = parsedMax == 0 ? int.MaxValue : parsedMax;
+                    maxSet = true;
                     break;
             }
         }
 
-        IReadOnlyList<string> strings = inputs.Count > 0
-            ? inputs
-            : CommandUtils.ReadLines(stdin).ToList();
+        IReadOnlyList<string> strings = CommandUtils.StringsList(inputs, stdin);
+
+        if (!maxSet) {
+            int autoMax = strings
+                .Select(s => VisualWidth.Of(s))
+                .Where(w => w > 0)
+                .DefaultIfEmpty(int.MaxValue)
+                .Min();
+            if (autoMax != int.MaxValue) {
+                max = autoMax;
+            }
+        }
 
         bool changes = false;
         for (int i = 0; i < strings.Count; i++) {
@@ -87,13 +98,17 @@ public static class ShortenCommand {
     }
 
     private static string Shorten(string s, int max, string ellipsis, bool left) {
-        if (s.Length <= max) {
+        if (VisualWidth.Of(s) <= max) {
             return s;
         }
-        int keep = Math.Max(0, max - ellipsis.Length);
-        if (left) {
-            return ellipsis + s[^keep..];
+        int ellipsisWidth = VisualWidth.Of(ellipsis);
+        if (ellipsisWidth > max) {
+            return left ? VisualWidth.TakeRight(s, max) : VisualWidth.TakeLeft(s, max);
         }
-        return s[..keep] + ellipsis;
+        int keep = max - ellipsisWidth;
+        if (left) {
+            return ellipsis + VisualWidth.TakeRight(s, keep);
+        }
+        return VisualWidth.TakeLeft(s, keep) + ellipsis;
     }
 }

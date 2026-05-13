@@ -53,7 +53,7 @@ public static class TrimCommand {
             right = true;
         }
 
-        IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = CommandUtils.Strings(inputs, stdin);
         bool changes = false;
         foreach (var s in strings) {
             var result = chars is null

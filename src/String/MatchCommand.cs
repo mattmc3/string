@@ -102,24 +102,34 @@ public static class MatchCommand {
 
         Regex re;
         try {
-            re = useRegex ? BuildRegex(rest[0], ignoreCase) : GlobToRegex(rest[0], ignoreCase);
+            re = useRegex ? BuildRegex(rest[0], ignoreCase) : GlobToRegex(rest[0], ignoreCase, entire);
         }
         catch (ArgumentException ex) {
             error.WriteLine($"error: invalid pattern: {ex.Message}");
             return 1;
         }
 
-        IEnumerable<string> strings = rest.Count > 1 ? rest.Skip(1) : CommandUtils.ReadLines(stdin);
+        var strArgs = rest.Skip(1).Where(s => s != "--").ToList();
+        IEnumerable<string> strings = CommandUtils.Strings(strArgs, stdin);
         bool changes = false;
         int totalMatches = 0;
 
         foreach (var s in strings) {
             if (invert) {
                 if (!re.IsMatch(s)) {
+                    if (totalMatches >= maxMatches) {
+                        break;
+                    }
                     if (!quiet) {
-                        output.WriteLine(s);
+                        if (useIndex) {
+                            output.WriteLine($"1 {s.Length}");
+                        }
+                        else {
+                            output.WriteLine(s);
+                        }
                     }
                     changes = true;
+                    totalMatches++;
                 }
                 continue;
             }
@@ -178,8 +188,8 @@ public static class MatchCommand {
         return true;
     }
 
-    private static Regex GlobToRegex(string glob, bool ignoreCase) {
-        var sb = new StringBuilder("^");
+    private static Regex GlobToRegex(string glob, bool ignoreCase, bool entire = false) {
+        var sb = new StringBuilder(entire ? "" : "^");
         int i = 0;
         while (i < glob.Length) {
             switch (glob[i]) {
@@ -212,12 +222,19 @@ public static class MatchCommand {
                     break;
             }
         }
-        sb.Append('$');
+        if (!entire) {
+            sb.Append('$');
+        }
         RegexOptions options = RegexOptions.Singleline | (ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
         return new Regex(sb.ToString(), options);
     }
 
+    private static readonly Regex Pcre2BackrefNum = new(@"\\g(\d+)", RegexOptions.Compiled);
+    private static readonly Regex Pcre2BackrefBraces = new(@"\\g\{(\d+)\}", RegexOptions.Compiled);
+
     private static Regex BuildRegex(string pattern, bool ignoreCase) {
+        pattern = Pcre2BackrefBraces.Replace(pattern, @"\$1");
+        pattern = Pcre2BackrefNum.Replace(pattern, @"\$1");
         RegexOptions options = RegexOptions.Singleline | (ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
         return new Regex(pattern, options);
     }

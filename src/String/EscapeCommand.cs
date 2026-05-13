@@ -45,7 +45,7 @@ public static class EscapeCommand {
             return 1;
         }
 
-        IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = CommandUtils.Strings(inputs, stdin);
         bool any = false;
 
         foreach (var s in strings) {
@@ -95,7 +95,7 @@ public static class UnescapeCommand {
             return 1;
         }
 
-        IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = CommandUtils.Strings(inputs, stdin);
         bool any = false;
 
         foreach (var s in strings) {
@@ -151,11 +151,65 @@ internal static class EscapeCore {
 
     private static string EscapeScript(string s, bool noQuoted) {
         bool safe = s.Length > 0 && s.All(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' or '/');
-        if (noQuoted && safe) {
-            return s;
-        }
-        return "'" + s.Replace("'", "'\\''") + "'";
+        if (safe) return noQuoted ? s : $"'{s}'";
+        return noQuoted ? EscapeScriptNoQuoted(s) : EscapeScriptQuoted(s);
     }
+
+    private static string EscapeScriptQuoted(string s) {
+        var sb = new StringBuilder();
+        bool inQuote = false;
+        foreach (char c in s) {
+            if (IsScriptControlChar(c)) {
+                if (inQuote) { sb.Append('\''); inQuote = false; }
+                sb.Append(EscapeControlChar(c));
+            }
+            else {
+                if (!inQuote) { sb.Append('\''); inQuote = true; }
+                if (c == '\'') sb.Append('\\');
+                sb.Append(c);
+            }
+        }
+        if (inQuote) sb.Append('\'');
+        if (sb.Length == 0) sb.Append("''");
+        return sb.ToString();
+    }
+
+    private static string EscapeScriptNoQuoted(string s) {
+        var sb = new StringBuilder();
+        char? prev = null;
+        foreach (char c in s) {
+            if (IsScriptControlChar(c)) {
+                sb.Append(EscapeControlChar(c));
+            }
+            else if (c == '#' && (prev == null || prev == ' ' || prev == '\t')) {
+                sb.Append("\\#");
+            }
+            else if (NeedsBackslashEscape(c)) {
+                sb.Append('\\');
+                sb.Append(c);
+            }
+            else {
+                sb.Append(c);
+            }
+            prev = c;
+        }
+        return sb.ToString();
+    }
+
+    private static bool IsScriptControlChar(char c) => c < 0x20 || c == 0x7F;
+
+    private static string EscapeControlChar(char c) {
+        int n = (int)c;
+        if (n >= 1 && n <= 26) return $"\\c{(char)('a' + n - 1)}";
+        if (n == 27) return "\\e";
+        if (n == 127) return "\\x7f";
+        return $"\\x{n:x2}";
+    }
+
+    private static bool NeedsBackslashEscape(char c) =>
+        c is ' ' or '\t' or '"' or '\'' or '\\' or '$' or '~'
+            or '|' or '&' or ';' or '(' or ')' or '[' or ']'
+            or '{' or '}' or '<' or '>';
 
     private static string UnescapeScript(string s) {
         var sb = new StringBuilder();
@@ -163,8 +217,15 @@ internal static class EscapeCore {
         while (i < s.Length) {
             if (s[i] == '\'') {
                 i++;
+                // Inside single-quoted strings, only \\ and \' are recognized escape sequences (fish behavior)
                 while (i < s.Length && s[i] != '\'') {
-                    sb.Append(s[i++]);
+                    if (s[i] == '\\' && i + 1 < s.Length && s[i + 1] is '\'' or '\\') {
+                        sb.Append(s[i + 1]);
+                        i += 2;
+                    }
+                    else {
+                        sb.Append(s[i++]);
+                    }
                 }
                 if (i < s.Length) {
                     i++;
@@ -187,6 +248,9 @@ internal static class EscapeCore {
             if (char.IsLetterOrDigit(c)) {
                 sb.Append(c);
             }
+            else if (c == '_') {
+                sb.Append("__");
+            }
             else {
                 sb.Append($"_{(int)c:X2}_");
             }
@@ -195,9 +259,33 @@ internal static class EscapeCore {
     }
 
     private static string UnescapeVar(string s) {
-        return VarPattern.Replace(s, m => {
-            int code = Convert.ToInt32(m.Groups[1].Value, 16);
-            return ((char)code).ToString();
-        });
+        var sb = new StringBuilder();
+        int i = 0;
+        while (i < s.Length) {
+            if (s[i] == '_') {
+                if (i + 1 < s.Length && s[i + 1] == '_') {
+                    sb.Append('_');
+                    i += 2;
+                }
+                else {
+                    int j = i + 1;
+                    while (j < s.Length && IsHexChar(s[j])) j++;
+                    if (j > i + 1 && j < s.Length && s[j] == '_') {
+                        sb.Append((char)Convert.ToInt32(s[(i + 1)..j], 16));
+                        i = j + 1;
+                    }
+                    else {
+                        sb.Append(s[i++]);
+                    }
+                }
+            }
+            else {
+                sb.Append(s[i++]);
+            }
+        }
+        return sb.ToString();
     }
+
+    private static bool IsHexChar(char c) =>
+        (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
 }

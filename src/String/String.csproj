@@ -17,6 +17,11 @@
     <LinkerArg Include="-L/opt/homebrew/opt/brotli/lib" />
   </ItemGroup>
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>String.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\GetOpt\GetOpt.csproj" />
   </ItemGroup>
 

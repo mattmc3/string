@@ -23,17 +23,17 @@ public class EscapeTests : TestBase {
     }
 
     [Fact]
-    public void Escape_script_no_quoted_quotes_unsafe_string() {
+    public void Escape_script_no_quoted_uses_backslash_for_unsafe_string() {
         var (exit, stdout, _) = Run("escape", "-n", "hello world");
         Assert.Equal(0, exit);
-        Assert.Equal(["'hello world'"], Lines(stdout));
+        Assert.Equal(["hello\\ world"], Lines(stdout));
     }
 
     [Fact]
     public void Escape_script_embeds_single_quote() {
         var (exit, stdout, _) = Run("escape", "it's");
         Assert.Equal(0, exit);
-        Assert.Equal(["'it'\\''s'"], Lines(stdout));
+        Assert.Equal(["'it\\'s'"], Lines(stdout));
     }
 
     [Fact]

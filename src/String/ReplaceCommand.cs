@@ -89,7 +89,7 @@ public static class ReplaceCommand {
             }
         }
 
-        IEnumerable<string> strings = rest.Count > 2 ? rest.Skip(2) : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = rest.Count > 2 ? rest.Skip(2) : CommandUtils.ReadLines(stdin); // can't use Strings(); rest has leading pattern args
         bool changes = false;
 
         foreach (var s in strings) {

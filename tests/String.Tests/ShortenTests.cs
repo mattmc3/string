@@ -57,10 +57,10 @@ public class ShortenTests : TestBase {
     }
 
     [Fact]
-    public void Shorten_max_shorter_than_ellipsis_returns_ellipsis() {
+    public void Shorten_max_shorter_than_ellipsis_truncates_content() {
         var (exit, stdout, _) = Run("shorten", "-m", "1", "-c", "...", "hello");
         Assert.Equal(0, exit);
-        Assert.Equal(["..."], Lines(stdout));
+        Assert.Equal(["h"], Lines(stdout));
     }
 
     [Fact]

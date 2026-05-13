@@ -60,13 +60,38 @@ public static class RepeatCommand {
             error.WriteLine($"error: repeat: Invalid count value '{count}'");
             return 1;
         }
+
+        // Positional count: if -n not given and first input parses as integer, use it as count
+        if (count == 0 && inputs.Count > 0) {
+            if (int.TryParse(inputs[0], out int positionalCount)) {
+                if (positionalCount < 0) {
+                    error.WriteLine($"error: repeat: Invalid count value '{inputs[0]}'");
+                    return 1;
+                }
+                count = positionalCount;
+                inputs = inputs.Skip(1).ToList();
+            }
+            else if (max < 0) {
+                error.WriteLine($"error: repeat: Invalid count value '{inputs[0]}'");
+                return 1;
+            }
+        }
+
         // max-only mode: no -n given, but -m given
         bool maxOnly = count == 0 && max >= 0;
         if (count == 0 && !maxOnly) {
             return 1;
         }
 
-        IReadOnlyList<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin).ToList();
+        if (inputs.Count > 0 && stdin != TextReader.Null) {
+            var peek = stdin.Peek();
+            if (peek != -1) {
+                error.WriteLine("error: repeat: too many arguments");
+                return 1;
+            }
+        }
+
+        IReadOnlyList<string> strings = CommandUtils.StringsList(inputs, stdin);
         if (strings.Count == 0) {
             return 1;
         }
@@ -83,7 +108,7 @@ public static class RepeatCommand {
             if (repeated.Length > 0) {
                 changes = true;
             }
-            if (!quiet) {
+            if (!quiet && (repeated.Length > 0 || strings.Count > 1)) {
                 bool isLast = i == strings.Count - 1;
                 if (noNewline && isLast) {
                     output.Write(repeated);

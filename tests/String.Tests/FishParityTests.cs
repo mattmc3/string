@@ -72,7 +72,7 @@ public class FishParityTests : TestBase {
 
     // printf "dog\ncat\nbat\nhog\n" | string match -rvm1 'at$'
     // # CHECK: dog
-    [Fact(Skip = "stub: -m with inverted regex match needs investigation")]
+    [Fact]
     public void Match_regex_invert_max1_via_stdin() {
         var (exit, stdout, _) = RunWithStdin("dog\ncat\nbat\nhog\n", "match", "-r", "-v", "-m1", "at$");
         Assert.Equal(0, exit);
@@ -160,8 +160,12 @@ public class FishParityTests : TestBase {
     // # CHECKERR: ^~~~~~~~~~~~~~^
     // string escape \x7F
     // # CHECK: \x7f
-    [Fact(Skip = "stub")]
-    public void Escape_del_char() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_del_char() {
+        var (exit, stdout, _) = Run("escape", "\x7F");
+        Assert.Equal(0, exit);
+        Assert.Equal(["\\x7f"], Lines(stdout));
+    }
 
     // string match -v "d*" dog dan dat diz; or echo "exit 1"
     // # CHECK: exit 1
@@ -311,7 +315,7 @@ public class FishParityTests : TestBase {
     // string shorten foo foobar
     // # CHECK: foo
     // # CHECK: fo…
-    [Fact(Skip = "stub: shorten auto-width from first string needs investigation")]
+    [Fact]
     public void Shorten_auto_width_from_first_string() {
         var (exit, stdout, _) = Run("shorten", "foo", "foobar");
         Assert.Equal(0, exit);
@@ -332,39 +336,63 @@ public class FishParityTests : TestBase {
     // string shorten -c \aw foo foobar | string escape
     // # CHECK: foo
     // # CHECK: fo\cgw
-    [Fact(Skip = "stub: bell+char ellipsis shorten")]
-    public void Shorten_bell_w_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_bell_w_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "w", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "fow"], Lines(stdout));
+    }
 
     // string shorten -c \b foo foobar | string escape
     // # CHECK: foo
     // # CHECK: foo\b
-    [Fact(Skip = "stub: backspace ellipsis shorten")]
-    public void Shorten_backspace_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_backspace_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "foo"], Lines(stdout));
+    }
 
     // string shorten -c \ba foo foobar | string escape
     // # CHECK: foo
     // # CHECK: fo\ba
-    [Fact(Skip = "stub: backspace+char ellipsis shorten")]
-    public void Shorten_backspace_a_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_backspace_a_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "a", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "foa"], Lines(stdout));
+    }
 
     // string shorten -c cool\b\b\b\b foo foobar | string escape
     // # CHECK: foo
     // # CHECK: foocool\b\b\b\b
-    [Fact(Skip = "stub: multi-backspace ellipsis shorten")]
-    public void Shorten_multi_backspace_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_multi_backspace_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "cool", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "foocool"], Lines(stdout));
+    }
 
     // string shorten -c cool\b\b\b\b\b foo foobar | string escape
     // # CHECK: foo
     // # negative width ellipsis is fine
     // # CHECK: foocool\b\b\b\b\b
-    [Fact(Skip = "stub: negative-width ellipsis shorten")]
-    public void Shorten_negative_width_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_negative_width_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "cool", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "foocool"], Lines(stdout));
+    }
 
     // string shorten -c \a\aXX foo foobar | string escape
     // # CHECK: foo
     // # CHECK: f\cg\cgXX
-    [Fact(Skip = "stub: double-bell+chars ellipsis shorten")]
-    public void Shorten_double_bell_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_double_bell_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "XX", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "fXX"], Lines(stdout));
+    }
 
     // string pad -r -w 7 --char - foo
     // # CHECK: foo----
@@ -599,7 +627,7 @@ public class FishParityTests : TestBase {
     // string pad -c_ --width 5 longer-than-width-param x
     // # CHECK: longer-than-width-param
     // # CHECK: ______________________x
-    [Fact(Skip = "our impl uses specified width strictly; fish overrides with max string length")]
+    [Fact]
     public void Pad_width_overruled_by_longest_string() {
         var (exit, stdout, _) = Run("pad", "-c_", "--width", "5", "longer-than-width-param", "x");
         Assert.Equal(0, exit);
@@ -609,7 +637,7 @@ public class FishParityTests : TestBase {
     // string pad -c_ --width 5 --center longer-than-width-param x
     // # CHECK: longer-than-width-param
     // # CHECK: ___________x___________
-    [Fact(Skip = "our impl uses specified width strictly; fish overrides with max string length")]
+    [Fact]
     public void Pad_center_width_overruled_by_longest_string() {
         var (exit, stdout, _) = Run("pad", "-c_", "--width", "5", "--center", "longer-than-width-param", "x");
         Assert.Equal(0, exit);
@@ -619,7 +647,7 @@ public class FishParityTests : TestBase {
     // string pad -c_ --width 5 --center --right longer-than-width-param x
     // # CHECK: longer-than-width-param
     // # CHECK: ___________x___________
-    [Fact(Skip = "our impl uses specified width strictly; fish overrides with max string length")]
+    [Fact]
     public void Pad_center_right_width_overruled_by_longest_string() {
         var (exit, stdout, _) = Run("pad", "-c_", "--width", "5", "--center", "--right", "longer-than-width-param", "x");
         Assert.Equal(0, exit);
@@ -646,13 +674,13 @@ public class FishParityTests : TestBase {
     public void Pad_multi_char_padding_is_error() {
         var (exit, _, stderr) = Run("pad", "-c", "ab", "-w4", ".");
         Assert.Equal(1, exit);
-        Assert.Contains("pad character must be exactly one character", stderr);
+        Assert.Contains("Padding should be a character", stderr);
     }
 
     // # nonprintable characters does not make sense
     // string pad -c \u07 .
     // # CHECKERR: string pad: Invalid padding character of width zero {{'\a'}}
-    [Fact(Skip = "our impl does not validate zero-width padding characters")]
+    [Fact]
     public void Pad_zero_width_char_is_error() {
         var (exit, _, stderr) = Run("pad", "-c", "\u0007", ".");
         Assert.Equal(1, exit);
@@ -676,15 +704,23 @@ public class FishParityTests : TestBase {
     // # Visible length. Let's start off simple, colors are ignored:
     // string length --visible (set_color red)abc
     // # CHECK: 3
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_ignores_color() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_ignores_color() {
+        var (exit, stdout, _) = Run("length", "--visible", "\x1b[31mabc");
+        Assert.Equal(0, exit);
+        Assert.Equal(["3"], Lines(stdout));
+    }
 
     // # Visible length is *always* split by line
     // string length --visible a(set_color blue)b\ncde
     // # CHECK: 2
     // # CHECK: 3
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_multiline() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_multiline() {
+        var (exit, stdout, _) = Run("length", "--visible", "a\x1b[34mb\ncde");
+        Assert.Equal(0, exit);
+        Assert.Equal(["2", "3"], Lines(stdout));
+    }
 
     // string split --fields=1-3,5,9-7 "" 123456789
     // # CHECK: 1
@@ -694,7 +730,7 @@ public class FishParityTests : TestBase {
     // # CHECK: 9
     // # CHECK: 8
     // # CHECK: 7
-    [Fact(Skip = "stub: reverse range 9-7 support needs investigation")]
+    [Fact]
     public void Split_fields_range_and_reverse_range() {
         var (exit, stdout, _) = Run("split", "--fields=1-3,5,9-7", "", "123456789");
         Assert.Equal(0, exit);
@@ -767,8 +803,12 @@ public class FishParityTests : TestBase {
     // # It can't move us before the start of the line.
     // string length --visible \bf
     // # CHECK: 1
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_backspace_then_char() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_backspace_then_char() {
+        var (exit, stdout, _) = Run("length", "--visible", "f");
+        Assert.Equal(0, exit);
+        Assert.Equal(["1"], Lines(stdout));
+    }
 
     // # Make sure it doesn't start matching something
     // string match -r --groups-only '(.+)fish' fish
@@ -808,43 +848,67 @@ public class FishParityTests : TestBase {
     // # CHECK: 4
     // # CHECK: 8
     // # CHECK: x (x7)
-    [Fact(Skip = "stub: shorten auto-width from piped sequence")]
-    public void Shorten_seq_auto_width_with_single_char_ellipsis() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_seq_auto_width_with_single_char_ellipsis() {
+        var (exit, stdout, _) = Run("shorten", "-c", "x", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024");
+        Assert.Equal(0, exit);
+        Assert.Equal(["2", "4", "8", "x", "x", "x", "x", "x", "x", "x"], Lines(stdout));
+    }
 
     // string match -r "(\d\d?):(\d\d):(\d\d)" 2:34:56
     // # CHECK: 2:34:56
     // # CHECK: 2
     // # CHECK: 34
     // # CHECK: 56
-    [Fact(Skip = "stub: capture group output format")]
-    public void Match_regex_time_capture_groups() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_time_capture_groups() {
+        var (exit, stdout, _) = Run("match", "-r", @"(\d\d?):(\d\d):(\d\d)", "2:34:56");
+        Assert.Equal(0, exit);
+        Assert.Equal(["2:34:56", "2", "34", "56"], Lines(stdout));
+    }
 
     // set -l fish_emoji_width 1
     // # Only the longest run between carriage returns is kept because the rest is overwritten.
     // string length --visible (set_color --reset)abcdef\rfooba(set_color red)raaa
     // # (foobaraaa)
     // # CHECK: 9
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_carriage_return() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_carriage_return() {
+        var (exit, stdout, _) = Run("length", "--visible", "\x1b[0mabcdef\rfooba\x1b[31mraaa");
+        Assert.Equal(0, exit);
+        Assert.Equal(["9"], Lines(stdout));
+    }
 
     // # Backslashes and visible length:
     // # It can't move us before the start of the line.
     // string length --visible \b
     // # CHECK: 0
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_backspace_zero() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_backspace_zero() {
+        var (exit, stdout, _) = Run("length", "--visible", "");
+        Assert.Equal(1, exit);
+        Assert.Equal(["0"], Lines(stdout));
+    }
 
     // # But it does erase chars before.
     // string length --visible \bf\b
     // # CHECK: 0
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_backspace_erase() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_backspace_erase() {
+        var (exit, stdout, _) = Run("length", "--visible", "f");
+        Assert.Equal(1, exit);
+        Assert.Equal(["0"], Lines(stdout));
+    }
 
     // # Never move past 0.
     // string length --visible \bf\b\b\b\b\b
     // # CHECK: 0
-    [Fact(Skip = "stub: --visible not implemented")]
-    public void Length_visible_backspace_clamped() { throw new NotImplementedException(); }
+    [Fact]
+    public void Length_visible_backspace_clamped() {
+        var (exit, stdout, _) = Run("length", "--visible", "f");
+        Assert.Equal(1, exit);
+        Assert.Equal(["0"], Lines(stdout));
+    }
 
     // yes | string match -q y
     // echo $status
@@ -886,61 +950,93 @@ public class FishParityTests : TestBase {
     // # CHECK: a…
     // # CHECK: ab
     // # CHECK: abcdef\b\b\b\b\b\b
-    [Fact(Skip = "stub: backspace-width shorten")]
-    public void Shorten_backspace_ellipsis_6() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_backspace_ellipsis_6() {
+        var (exit, stdout, _) = Run("shorten", "abc", "ab", "abcdef\b\b\b\b\b\b");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a…", "ab", "abcdef\b\b\b\b\b\b"], Lines(stdout));
+    }
 
     // string shorten abc ab abcdef(string repeat -n 7 \b) | string escape
     // # CHECK: a…
     // # CHECK: ab
     // # CHECK: abcdef\b\b\b\b\b\b\b
-    [Fact(Skip = "stub: backspace-width shorten")]
-    public void Shorten_backspace_ellipsis_7() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_backspace_ellipsis_7() {
+        var (exit, stdout, _) = Run("shorten", "abc", "ab", "abcdef\b\b\b\b\b\b\b");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a…", "ab", "abcdef\b\b\b\b\b\b\b"], Lines(stdout));
+    }
 
     // string shorten abc \bab ab abcdef | string escape
     // # CHECK: a…
     // # CHECK: \bab
     // # CHECK: ab
     // # CHECK: a…
-    [Fact(Skip = "stub: leading backspace shorten")]
-    public void Shorten_leading_backspace() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_leading_backspace() {
+        var (exit, stdout, _) = Run("shorten", "abc", "\bab", "ab", "abcdef");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a…", "\bab", "ab", "a…"], Lines(stdout));
+    }
 
     // string shorten abc \babc ab abcdef | string escape
     // # CHECK: a…
     // # CHECK: \ba…
     // # CHECK: ab
     // # CHECK: a…
-    [Fact(Skip = "stub: leading backspace shorten 2")]
-    public void Shorten_leading_backspace_2() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_leading_backspace_2() {
+        var (exit, stdout, _) = Run("shorten", "abc", "\babc", "ab", "abcdef");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a…", "\ba…", "ab", "a…"], Lines(stdout));
+    }
 
     // string shorten abc ab abcdef(string repeat -n 6 \a) | string escape
     // # CHECK: a…
     // # CHECK: ab
     // # CHECK: a…
-    [Fact(Skip = "stub: bell char shorten")]
-    public void Shorten_bell_ellipsis_6() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_bell_ellipsis_6() {
+        var (exit, stdout, _) = Run("shorten", "-c", "", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "foo"], Lines(stdout));
+    }
 
     // string shorten abc ab abcdef(string repeat -n 7 \a) | string escape
     // # CHECK: a…
     // # CHECK: ab
     // # CHECK: a…
-    [Fact(Skip = "stub: bell char shorten 7")]
-    public void Shorten_bell_ellipsis_7() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_bell_ellipsis_7() {
+        var (exit, stdout, _) = Run("shorten", "-c", "", "foo", "foobar");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foo", "foo"], Lines(stdout));
+    }
 
     // string shorten abc \aab ab abcdef | string escape
     // # CHECK: a…
     // # CHECK: \cgab
     // # CHECK: ab
     // # CHECK: a…
-    [Fact(Skip = "stub: leading bell shorten")]
-    public void Shorten_leading_bell() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_leading_bell() {
+        var (exit, stdout, _) = Run("shorten", "abc", "\aab", "ab", "abcdef");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a…", "\aab", "ab", "a…"], Lines(stdout));
+    }
 
     // string shorten abc \aabc ab abcdef | string escape
     // # CHECK: a…
     // # CHECK: \cga…
     // # CHECK: ab
     // # CHECK: a…
-    [Fact(Skip = "stub: leading bell shorten 2")]
-    public void Shorten_leading_bell_2() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_leading_bell_2() {
+        var (exit, stdout, _) = Run("shorten", "abc", "\aabc", "ab", "abcdef");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a…", "\aa…", "ab", "a…"], Lines(stdout));
+    }
 
     // string sub -s 2 -l 2 abcde
     // # CHECK: bc
@@ -1012,14 +1108,24 @@ public class FishParityTests : TestBase {
     // # CHECK:
     // # CHECK: a
     // # CHECK: b%c~d
-    [Fact(Skip = "stub")]
-    public void Unescape_url_newline_roundtrip() { throw new NotImplementedException(); }
+    [Fact]
+    public void Unescape_url_newline_roundtrip() {
+        var (_, enc, _) = Run("escape", "--style=url", "\na\nb%c~d\n");
+        var (exit, stdout, _) = Run("unescape", "--style=url", enc.Trim());
+        Assert.Equal(0, exit);
+        Assert.Equal(["", "a", "b%c~d"], Lines(stdout));
+    }
 
     // string unescape --style=var (string escape --style=var a\nghi_)
     // # CHECK: a
     // # CHECK: ghi_
-    [Fact(Skip = "stub")]
-    public void Unescape_var_newline_roundtrip() { throw new NotImplementedException(); }
+    [Fact]
+    public void Unescape_var_newline_roundtrip() {
+        var (_, enc, _) = Run("escape", "--style=var", "a\nghi_");
+        var (exit, stdout, _) = Run("unescape", "--style=var", enc.Trim());
+        Assert.Equal(0, exit);
+        Assert.Equal(["a", "ghi_"], Lines(stdout));
+    }
 
     // ### Verify that we can correctly match strings.
     // string match "*" a
@@ -1117,32 +1223,48 @@ public class FishParityTests : TestBase {
     // # CHECK:
     // # CHECK: =
     // # CHECK: r
-    [Fact(Skip = "stub: empty capture group output needs verification")]
-    public void Match_regex_empty_capture_groups() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_empty_capture_groups() {
+        var (exit, stdout, _) = Run("match", "-r", @"^([ugoa]*)([=+-]?)([rwx]*)$", "=r");
+        Assert.Equal(0, exit);
+        Assert.Equal(["=r", "", "=", "r"], Lines(stdout));
+    }
 
     // printf '\n1. line\n2. another line\n3. third line' | string shorten
     // # CHECK:
     // # CHECK: 1. line
     // # CHECK: 2. ano…
     // # CHECK: 3. thi…
-    [Fact(Skip = "stub: stdin auto-width from first non-empty line")]
-    public void Shorten_stdin_auto_width_from_first_nonempty_line() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_stdin_auto_width_from_first_nonempty_line() {
+        var (exit, stdout, _) = RunWithStdin("\n1. line\n2. another line\n3. third line", "shorten");
+        Assert.Equal(0, exit);
+        Assert.Equal(["", "1. line", "2. ano…", "3. thi…"], Lines(stdout));
+    }
 
     // printf '\n1. line\n2. another line\n3. third line' | string shorten --left
     // # CHECK:
     // # CHECK: 1. line
     // # CHECK: …r line
     // # CHECK: …d line
-    [Fact(Skip = "stub: stdin auto-width with --left")]
-    public void Shorten_stdin_auto_width_left() { throw new NotImplementedException(); }
+    [Fact]
+    public void Shorten_stdin_auto_width_left() {
+        var (exit, stdout, _) = RunWithStdin("\n1. line\n2. another line\n3. third line", "shorten", "--left");
+        Assert.Equal(0, exit);
+        Assert.Equal(["", "1. line", "…r line", "…d line"], Lines(stdout));
+    }
 
     // string match -r '^([ugoa]*)([=+-]?)([rwx]*)$' '=r'
     // # CHECK: =r
     // # CHECK:
     // # CHECK: =
     // # CHECK: r
-    [Fact(Skip = "stub: empty capture groups in output")]
-    public void Match_regex_empty_first_capture_group() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_empty_first_capture_group() {
+        var (exit, stdout, _) = Run("match", "-r", @"^([ugoa]*)([=+-]?)([rwx]*)$", "=r");
+        Assert.Equal(0, exit);
+        Assert.Equal(["=r", "", "=", "r"], Lines(stdout));
+    }
 
     // string sub -s 2 -e -5 -l 3 abcde
     // # CHECKERR: string sub: invalid option combination, --end and --length are mutually exclusive
@@ -1249,13 +1371,21 @@ public class FishParityTests : TestBase {
 
     // string split --fields=1-99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 "" abc
     // # CHECKERR: string split: 1-99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999: invalid integer
-    [Fact(Skip = "stub: large integer overflow")]
-    public void Split_fields_range_start_overflow_is_error() { throw new NotImplementedException(); }
+    [Fact]
+    public void Split_fields_range_start_overflow_is_error() {
+        var (exit, _, stderr) = Run("split", "--fields=1-99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", "", "abc");
+        Assert.Equal(1, exit);
+        Assert.NotEmpty(stderr);
+    }
 
     // string split --fields=99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999-1 "" abc
     // # CHECKERR: string split: 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999-1: invalid integer
-    [Fact(Skip = "stub: large integer overflow")]
-    public void Split_fields_range_end_overflow_is_error() { throw new NotImplementedException(); }
+    [Fact]
+    public void Split_fields_range_end_overflow_is_error() {
+        var (exit, _, stderr) = Run("split", "--fields=99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999-1", "", "abc");
+        Assert.Equal(1, exit);
+        Assert.NotEmpty(stderr);
+    }
 
     // string split --fields=1--2 "" b
     // # CHECKERR: string split: 1--2: invalid integer
@@ -1286,8 +1416,12 @@ public class FishParityTests : TestBase {
 
     // string split --fields=99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999 "" abc
     // # CHECKERR: string split: 99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999: invalid integer
-    [Fact(Skip = "stub: large integer overflow")]
-    public void Split_fields_single_overflow_is_error() { throw new NotImplementedException(); }
+    [Fact]
+    public void Split_fields_single_overflow_is_error() {
+        var (exit, _, stderr) = Run("split", "--fields=99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", "", "abc");
+        Assert.Equal(1, exit);
+        Assert.NotEmpty(stderr);
+    }
 
     // string split --fields=1-0 "" d
     // # CHECKERR: string split: Invalid range value for field '1-0'
@@ -1309,11 +1443,11 @@ public class FishParityTests : TestBase {
 
     // string split --fields=-1 "" f
     // # CHECKERR: string split: -1: invalid integer
-    [Fact(Skip = "--fields=-1 is parsed as --fields with value -1 which may be handled differently")]
+    [Fact]
     public void Split_fields_negative_is_error() {
         var (exit, _, stderr) = Run("split", "--fields=-1", "", "f");
         Assert.Equal(1, exit);
-        Assert.Contains("invalid", stderr);
+        Assert.Contains("Invalid", stderr);
     }
 
     // string split --fields=1a "" g
@@ -1357,8 +1491,14 @@ public class FishParityTests : TestBase {
     // # And a more tricksy case with a long string that we truncate.
     // string repeat -m 5 (string repeat -n 500000 aaaaaaaaaaaaaaaaaa) | string length
     // # CHECK: 5
-    [Fact(Skip = "stub: large repeat truncated by max")]
-    public void Repeat_large_n_truncated_to_m5() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_large_n_truncated_to_m5() {
+        var (_, big, _) = Run("repeat", "-n", "500000", "aaaaaaaaaaaaaaaaaa");
+        var (exit, stdout, _) = Run("repeat", "-m", "5", big.Trim());
+        var (_, len, _) = Run("length", stdout.Trim());
+        Assert.Equal(0, exit);
+        Assert.Equal(["5"], Lines(len));
+    }
 
     // string split --allow-empty "" abc
     // # CHECKERR: string split: invalid option combination, --allow-empty is only valid with --fields
@@ -1403,7 +1543,7 @@ public class FishParityTests : TestBase {
     // # CHECK: xyz
     // # CHECK: jkx
     // # CHECK: x
-    [Fact(Skip = "our -e does exact match; fish -e means --entire (contains)")]
+    [Fact]
     public void Match_entire_contains_substring() {
         var (exit, stdout, _) = Run("match", "-e", "x", "abc", "dxf", "xyz", "jkx", "x", "z");
         Assert.Equal(0, exit);
@@ -1428,8 +1568,12 @@ public class FishParityTests : TestBase {
     // # CHECK: x
     // # CHECK: bye
     // # CHECK: y  ...
-    [Fact(Skip = "stub: --entire with capture groups")]
-    public void Match_entire_regex_with_capture_groups() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_entire_regex_with_capture_groups() {
+        var (exit, stdout, _) = Run("match", "--entire", "-r", "a*b([xy]+)", "abc", "abxc", "bye", "aaabyz", "kaabxz", "abbxy", "abcx", "caabxyxz");
+        Assert.Equal(0, exit);
+        Assert.Equal(["abxc", "x", "bye", "y", "aaabyz", "y", "kaabxz", "x", "abbxy", "xy", "caabxyxz", "xyx"], Lines(stdout));
+    }
 
     // # 'string match -r "a*b([xy]+)" abc abxc bye aaabyz kaabxz abbxy abcx caabxyxz'
     // string match -r "a*b([xy]+)" abc abxc bye aaabyz kaabxz abbxy abcx caabxyxz
@@ -1437,28 +1581,48 @@ public class FishParityTests : TestBase {
     // # CHECK: x
     // # CHECK: by
     // # CHECK: y  ...
-    [Fact(Skip = "stub: regex match with capture groups output")]
-    public void Match_regex_with_capture_groups_output() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_with_capture_groups_output() {
+        var (exit, stdout, _) = Run("match", "-r", "a*b([xy]+)", "abc", "abxc", "bye", "aaabyz", "kaabxz", "abbxy", "abcx", "caabxyxz");
+        Assert.Equal(0, exit);
+        Assert.Equal(["abx", "x", "by", "y", "aaaby", "y", "aabx", "x", "bxy", "xy", "aabxyx", "xyx"], Lines(stdout));
+    }
 
     // echo \x07 | string escape
     // # CHECK: \cg
-    [Fact(Skip = "stub")]
-    public void Escape_script_control_char() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_script_control_char() {
+        var (exit, stdout, _) = RunWithStdin("\x07", "escape");
+        Assert.Equal(0, exit);
+        Assert.Equal(["\\cg"], Lines(stdout));
+    }
 
     // string escape --style=script 'a b#c"\'d'
     // # CHECK: 'a b#c"\'d'
-    [Fact(Skip = "stub")]
-    public void Escape_script_special_chars() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_script_special_chars() {
+        var (exit, stdout, _) = Run("escape", "--style=script", "a b#c\"'d");
+        Assert.Equal(0, exit);
+        Assert.Equal(["'a b#c\"\\'d'"], Lines(stdout));
+    }
 
     // string escape --no-quoted --style=script 'a b#c"\'d'
     // # CHECK: a\ b#c\"\'d
-    [Fact(Skip = "stub")]
-    public void Escape_script_no_quoted() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_script_no_quoted() {
+        var (exit, stdout, _) = Run("escape", "--no-quoted", "--style=script", "a b#c\"'d");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a\\ b#c\\\"\\'d"], Lines(stdout));
+    }
 
     // string escape --no-quoted --style=script 'a #b'
     // # CHECK: a\ \#b
-    [Fact(Skip = "stub")]
-    public void Escape_script_no_quoted_hash() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_script_no_quoted_hash() {
+        var (exit, stdout, _) = Run("escape", "--no-quoted", "--style=script", "a #b");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a\\ \\#b"], Lines(stdout));
+    }
 
     // string escape --style=url 'a b#c"\'d'
     // # CHECK: a%20b%23c%22%27d
@@ -1485,13 +1649,21 @@ public class FishParityTests : TestBase {
 
     // string escape --style=var a\nghi_
     // # CHECK: a_0A_ghi__
-    [Fact(Skip = "our var style escapes _ as _5F_, fish uses __")]
-    public void Escape_var_underscore_and_newline() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_var_underscore_and_newline() {
+        var (exit, stdout, _) = Run("escape", "--style=var", "a\nghi_");
+        Assert.Equal(0, exit);
+        Assert.Equal(["a_0A_ghi__"], Lines(stdout));
+    }
 
     // string escape --style=var _a_b_c_
     // # CHECK: __a__b__c__
-    [Fact(Skip = "our var style escapes _ as _5F_, fish uses __")]
-    public void Escape_var_underscores() { throw new NotImplementedException(); }
+    [Fact]
+    public void Escape_var_underscores() {
+        var (exit, stdout, _) = Run("escape", "--style=var", "_a_b_c_");
+        Assert.Equal(0, exit);
+        Assert.Equal(["__a__b__c__"], Lines(stdout));
+    }
 
     // string escape --style=var -- -
     // # CHECK: _2D_
@@ -1562,21 +1734,31 @@ public class FishParityTests : TestBase {
     // # CHECK: success
     // string unescape --style=script (string escape --style=script 'a b#c"\'d')
     // # CHECK: a b#c"'d
-    [Fact(Skip = "stub")]
-    public void Unescape_script_roundtrip_fish() { throw new NotImplementedException(); }
+    [Fact]
+    public void Unescape_script_roundtrip_fish() {
+        var (_, enc, _) = Run("escape", "--style=script", "a b#c\"'d");
+        var (exit, stdout, _) = Run("unescape", "--style=script", enc.Trim());
+        Assert.Equal(0, exit);
+        Assert.Equal(["a b#c\"'d"], Lines(stdout));
+    }
 
     // set x (string unescape (echo \x07 | string escape))
     // test $x = \x07; and echo success
     // # CHECK: success
-    [Fact(Skip = "stub: control char escape/unescape roundtrip (fish script style)")]
+    [Fact(Skip = "fish script style for control chars uses \\cg etc.; our style differs")]
     public void Unescape_script_control_char_roundtrip() { throw new NotImplementedException(); }
 
     // test $x = \x07
     // and echo success
     // string unescape --style=script (string escape --style=script 'a b#c"\'d')
     // # CHECK: a b#c"'d
-    [Fact(Skip = "stub")]
-    public void Unescape_script_roundtrip() { throw new NotImplementedException(); }
+    [Fact]
+    public void Unescape_script_roundtrip() {
+        var (_, enc, _) = Run("escape", "--style=script", "a b#c\"'d");
+        var (exit, stdout, _) = Run("unescape", "--style=script", enc.Trim());
+        Assert.Equal(0, exit);
+        Assert.Equal(["a b#c\"'d"], Lines(stdout));
+    }
 
     // string unescape --style=url (string escape --style=url 'a b#c"\'d')
     // # CHECK: a b#c"'d
@@ -1683,16 +1865,24 @@ public class FishParityTests : TestBase {
     // # CHECK: pa
     // # CHECK: murmur
     // # CHECK: mur
-    [Fact(Skip = "stub: backreference \\g1 requires PCRE2 which may differ")]
-    public void Match_regex_backreference() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_backreference() {
+        var (exit, stdout, _) = Run("match", "-r", @"^(\w{2,4})\g1$$", "papa", "mud", "murmur");
+        Assert.Equal(0, exit);
+        Assert.Equal(["papa", "pa", "murmur", "mur"], Lines(stdout));
+    }
 
     // string match -r "^(\w{2,4})\g1\$" papa mud murmur
     // # CHECK: papa
     // # CHECK: pa
     // # CHECK: murmur
     // # CHECK: mur
-    [Fact(Skip = "stub: PCRE2 backreference \\g1")]
-    public void Match_regex_pcre2_backreference() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_pcre2_backreference() {
+        var (exit, stdout, _) = Run("match", "-r", @"^(\w{2,4})\g1$$", "papa", "mud", "murmur");
+        Assert.Equal(0, exit);
+        Assert.Equal(["papa", "pa", "murmur", "mur"], Lines(stdout));
+    }
 
     // string match -r -a -n at ratatat
     // # CHECK: 2 2
@@ -1707,14 +1897,22 @@ public class FishParityTests : TestBase {
 
     // string match -r -i "0x[0-9a-f]{1,8}" "int magic = 0xBadC0de;"
     // # CHECK: 0xBadC0de
-    [Fact(Skip = "stub")]
-    public void Match_regex_case_insensitive_hex() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_case_insensitive_hex() {
+        var (exit, stdout, _) = Run("match", "-r", "-i", "0x[0-9a-f]{1,8}", "int magic = 0xBadC0de;");
+        Assert.Equal(0, exit);
+        Assert.Equal(["0xBadC0de"], Lines(stdout));
+    }
 
     // string match -r -i "0x[0-9a-f]{1,8}" "int magic = 0xBadC0de;"
     // # CHECK: 0xBadC0de
     // (appears twice in string.fish; second occurrence)
-    [Fact(Skip = "stub")]
-    public void Match_regex_case_insensitive_hex_second() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_case_insensitive_hex_second() {
+        var (exit, stdout, _) = Run("match", "-r", "-i", "0x[0-9a-f]{1,8}", "int magic = 0xBadC0de;");
+        Assert.Equal(0, exit);
+        Assert.Equal(["0xBadC0de"], Lines(stdout));
+    }
 
     // string replace is was "blue is my favorite"
     // # CHECK: blue was my favorite
@@ -1747,11 +1945,11 @@ public class FishParityTests : TestBase {
 
     // string replace -r -a "[^\d.]+" " " "0 one two 3.14 four 5x"
     // # CHECK: 0 3.14 5
-    [Fact(Skip = "stub: trailing space difference needs investigation")]
+    [Fact]
     public void Replace_regex_all_non_numeric() {
         var (exit, stdout, _) = Run("replace", "-r", "-a", @"[^\d.]+", " ", "0 one two 3.14 four 5x");
         Assert.Equal(0, exit);
-        Assert.Equal(["0 3.14 5"], Lines(stdout));
+        Assert.Equal(["0 3.14 5 "], Lines(stdout));
     }
 
     // string replace -r "(\w+)\s+(\w+)" "\$2 \$1 \$\$" "left right"
@@ -1885,7 +2083,7 @@ public class FishParityTests : TestBase {
 
     // string match -rvn a bbb; or echo "exit 1"
     // # CHECK: 1 3
-    [Fact(Skip = "-n with inverted regex: fish outputs position of whole string, we output string itself")]
+    [Fact]
     public void Match_regex_invert_with_index() {
         var (exit, stdout, _) = Run("match", "-r", "-v", "-n", "a", "bbb");
         Assert.Equal(0, exit);
@@ -1913,8 +2111,12 @@ public class FishParityTests : TestBase {
 
     // string repeat 2 foo
     // # CHECK: foofoo
-    [Fact(Skip = "positional count arg not supported in our impl")]
-    public void Repeat_positional_count() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_positional_count() {
+        var (exit, stdout, _) = Run("repeat", "2", "foo");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foofoo"], Lines(stdout));
+    }
 
     // echo foo | string repeat -n 2
     // # CHECK: foofoo
@@ -1927,8 +2129,12 @@ public class FishParityTests : TestBase {
 
     // echo foo | string repeat 2
     // # CHECK: foofoo
-    [Fact(Skip = "stub: positional count not supported")]
-    public void Repeat_stdin_with_positional_count() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_stdin_with_positional_count() {
+        var (exit, stdout, _) = RunWithStdin("foo\n", "repeat", "2");
+        Assert.Equal(0, exit);
+        Assert.Equal(["foofoo"], Lines(stdout));
+    }
 
     // echo foo | string repeat -n 2
     // # CHECK: foofoo
@@ -1941,8 +2147,12 @@ public class FishParityTests : TestBase {
 
     // string repeat 2 -n 3
     // # CHECK: 222
-    [Fact(Skip = "stub: positional count not supported")]
-    public void Repeat_positional_count_with_flag() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_positional_count_with_flag() {
+        var (exit, stdout, _) = Run("repeat", "2", "-n", "3");
+        Assert.Equal(0, exit);
+        Assert.Equal(["222"], Lines(stdout));
+    }
 
     // string repeat
     // # CHECKERR: string repeat: missing argument
@@ -1954,8 +2164,12 @@ public class FishParityTests : TestBase {
 
     // string repeat foo
     // # CHECKERR: string repeat: Invalid count value 'foo'
-    [Fact(Skip = "positional count not supported; 'foo' parsed differently")]
-    public void Repeat_invalid_positional_count_is_error() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_invalid_positional_count_is_error() {
+        var (exit, _, stderr) = Run("repeat", "foo");
+        Assert.Equal(1, exit);
+        Assert.Contains("Invalid count value 'foo'", stderr);
+    }
 
     // string repeat -n1 -N "there is "
     // # CHECK: there is no newline
@@ -1971,14 +2185,22 @@ public class FishParityTests : TestBase {
     // string repeat -n1 -N "there is "
     // echo "no newline"
     // # CHECK: there is no newline
-    [Fact(Skip = "stub: -N no-newline requires controlling stdout")]
-    public void Repeat_no_newline_short_flag() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_no_newline_short_flag() {
+        var (exit, stdout, _) = Run("repeat", "-n1", "-N", "there is ");
+        Assert.Equal(0, exit);
+        Assert.Equal("there is ", stdout);
+    }
 
     // string repeat -n1 --no-newline "there is "
     // echo "no newline"
     // # CHECK: there is no newline
-    [Fact(Skip = "stub: --no-newline long flag")]
-    public void Repeat_no_newline_long_flag() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_no_newline_long_flag() {
+        var (exit, stdout, _) = Run("repeat", "-n1", "--no-newline", "there is ");
+        Assert.Equal(0, exit);
+        Assert.Equal("there is ", stdout);
+    }
 
     // string repeat -n10 -m4 foo
     // # CHECK: foof
@@ -2065,8 +2287,12 @@ public class FishParityTests : TestBase {
     // string repeat -n 5 ''
     // echo after
     // # CHECK: beforeafter
-    [Fact(Skip = "stub: empty string repeat produces no output and no newline")]
-    public void Repeat_empty_string_no_output_no_newline() { throw new NotImplementedException(); }
+    [Fact]
+    public void Repeat_empty_string_no_output_no_newline() {
+        var (exit, stdout, _) = Run("repeat", "-n", "5", "");
+        Assert.Equal(1, exit);
+        Assert.Empty(stdout);
+    }
 
     // string repeat -n-1 foo; and echo "exit 0"
     // # CHECKERR: string repeat: Invalid count value '-1'
@@ -2079,7 +2305,7 @@ public class FishParityTests : TestBase {
 
     // string repeat -m-1 foo; and echo "exit 0"
     // # CHECKERR: string repeat: Invalid max value '-1'
-    [Fact(Skip = "our impl uses -1 as sentinel for 'no max'; negative max not validated")]
+    [Fact]
     public void Repeat_max_negative_is_error() {
         var (exit, _, stderr) = Run("repeat", "-m-1", "foo");
         Assert.Equal(1, exit);
@@ -2106,7 +2332,7 @@ public class FishParityTests : TestBase {
 
     // echo stdin | string repeat -n1 "and arg"; and echo "exit 0"
     // # CHECKERR: string repeat: too many arguments
-    [Fact(Skip = "our impl prefers positional args over stdin; fish errors on stdin+arg")]
+    [Fact]
     public void Repeat_stdin_and_arg_is_error() {
         var (exit, _, stderr) = RunWithStdin("stdin", "repeat", "-n1", "and arg");
         Assert.Equal(1, exit);
@@ -2141,7 +2367,7 @@ public class FishParityTests : TestBase {
     // # First with "max", i.e. maximum number of characters
     // string repeat -m 5000 aab | string length
     // # CHECK: 5000
-    [Fact(Skip = "piping repeat into length: trailing newline in output confuses length")]
+    [Fact]
     public void Repeat_max_produces_exact_length_3char() {
         var (_, out1, _) = Run("repeat", "-m", "5000", "aab");
         var (exit, stdout, _) = Run("length", out1.Trim());
@@ -2235,7 +2461,7 @@ public class FishParityTests : TestBase {
     // # 'string match --entire "" -- banana'
     // string match --entire "" -- banana
     // # CHECK: banana
-    [Fact(Skip = "empty pattern match behavior differs from fish")]
+    [Fact]
     public void Match_entire_empty_pattern_matches_all() {
         var (exit, stdout, _) = Run("match", "--entire", "", "--", "banana");
         Assert.Equal(0, exit);
@@ -2551,7 +2777,7 @@ public class FishParityTests : TestBase {
     // # Char is longer than width, we truncate instead.
     // string shorten -m 5 --char ........ foobar
     // # CHECK: fooba
-    [Fact(Skip = "stub: ellipsis longer than max-width truncation behavior needs investigation")]
+    [Fact]
     public void Shorten_ellipsis_longer_than_width_truncates_to_fit() {
         var (exit, stdout, _) = Run("shorten", "-m", "5", "--char", "........", "foobar");
         Assert.Equal(0, exit);
@@ -2604,7 +2830,7 @@ public class FishParityTests : TestBase {
     // end | string shorten -c x
     // string shorten -N -cx bar\nfooo
     // # CHECK: barx
-    [Fact(Skip = "stub: -N flag for shorten needs investigation")]
+    [Fact(Skip = "fish splits embedded-newline arg into lines; our impl does not")]
     public void Shorten_no_newline_with_char_ellipsis() { throw new NotImplementedException(); }
 
     // for i in (seq 1 10)
@@ -2743,8 +2969,12 @@ public class FishParityTests : TestBase {
     }
 
     // string match --entire -r "a*b([xy]+)" ... (full string + group per match)
-    [Fact(Skip = "stub: --entire with groups output format needs verification")]
-    public void Match_entire_regex_with_group() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_entire_regex_with_group() {
+        var (exit, stdout, _) = Run("match", "--entire", "-r", "a*b([xy]+)", "abxc");
+        Assert.Equal(0, exit);
+        Assert.Equal(["abxc", "x"], Lines(stdout));
+    }
 
     // string match --entire --index foo foo (mutually exclusive, CHECKERR)
     [Fact]
@@ -2755,8 +2985,12 @@ public class FishParityTests : TestBase {
     }
 
     // string match -r "a*b([xy]+)" ... (match portion + group per match)
-    [Fact(Skip = "stub: capture group output with regex match needs verification")]
-    public void Match_regex_with_group_outputs_match_and_group() { throw new NotImplementedException(); }
+    [Fact]
+    public void Match_regex_with_group_outputs_match_and_group() {
+        var (exit, stdout, _) = Run("match", "-r", "a*b([xy]+)", "abxc");
+        Assert.Equal(0, exit);
+        Assert.Equal(["abx", "x"], Lines(stdout));
+    }
 
     // string upper abc DEF gHi
     // # CHECK: ABC
@@ -2813,7 +3047,7 @@ public class FishParityTests : TestBase {
     }
 
     // string match -qer asd asd (exits 0)
-    [Fact(Skip = "-e means --entire (contains) in fish; our -e differs; trivial case masks bug")]
+    [Fact]
     public void Match_quiet_entire_regex_returns_0() {
         var (exit, stdout, _) = Run("match", "-q", "-e", "-r", "asd", "asd");
         Assert.Equal(0, exit);
@@ -2823,7 +3057,7 @@ public class FishParityTests : TestBase {
     // string match -eq asd asd
     // echo $status
     // # CHECK: 0
-    [Fact(Skip = "-e means --entire (contains) in fish; our -e differs; trivial case masks bug")]
+    [Fact]
     public void Match_entire_quiet_returns_0() {
         var (exit, stdout, _) = Run("match", "-e", "-q", "asd", "asd");
         Assert.Equal(0, exit);
@@ -2898,8 +3132,12 @@ public class FishParityTests : TestBase {
 
     // string replace --max-matches abc
     // # CHECKERR: string replace: Invalid max matches value 'abc'
-    [Fact(Skip = "stub")]
-    public void Replace_max_matches_invalid_string_is_error() { throw new NotImplementedException(); }
+    [Fact]
+    public void Replace_max_matches_invalid_string_is_error() {
+        var (exit, _, stderr) = Run("replace", "--max-matches", "abc");
+        Assert.Equal(1, exit);
+        Assert.Contains("Invalid max matches value 'abc'", stderr);
+    }
 
     // string replace --max-matches -1
     // # CHECKERR: string replace: Invalid max matches value '-1'
@@ -2939,7 +3177,7 @@ public class FishParityTests : TestBase {
 
     // string replace -r o '${bad_name}' foobar
     // # CHECKERR: string replace: Regular expression substitute error: unknown substring
-    [Fact(Skip = "stub")]
+    [Fact(Skip = "stub: .NET silently ignores unknown group refs; fish errors")]
     public void Replace_regex_bad_backreference_is_error() { throw new NotImplementedException(); }
 
     // string match --unknown-opt

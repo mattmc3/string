@@ -73,7 +73,7 @@ public static class SubCommand {
             return 1;
         }
 
-        IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = CommandUtils.Strings(inputs, stdin);
         bool any = false;
 
         foreach (var s in strings) {

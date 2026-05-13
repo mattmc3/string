@@ -49,7 +49,7 @@ public static class LowerCommand {
 internal static class TransformCommand {
     internal static int Run(IReadOnlyList<OptArg> opts, IReadOnlyList<string> inputs, TextReader stdin, Func<string, string> transform, TextWriter output) {
         bool quiet = opts.Any(o => o.Opt is "-q" or "--quiet");
-        IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
+        IEnumerable<string> strings = CommandUtils.Strings(inputs, stdin);
         bool changes = false;
         foreach (var s in strings) {
             var result = transform(s);
