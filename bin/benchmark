@@ -6,36 +6,63 @@ cd "$(git rev-parse --show-toplevel)"
 just publish-native
 
 bin="./publish/string"
+filter="${1:-}"
 
-echo "=== lower / upper ==="
-hyperfine \
-  --warmup 10 \
-  --shell=none \
-  "$bin lower Foo BAR baz" \
-  "$bin upper Foo BAR baz" \
-  "fish -N -c 'string lower Foo BAR baz'" \
-  "fish -N -c 'string upper Foo BAR baz'"
+section() {
+    local name="$1"
+    [[ -z "$filter" || "$name" == *"$filter"* ]]
+}
 
-echo "=== trim (internal variants) ==="
-hyperfine \
-  --warmup 10 \
-  --shell=none \
-  "$bin trim -c x xxhelloxx" \
-  "$bin trim -l -c x xxhelloxx" \
-  "$bin trim -r -c x xxhelloxx"
+if section lower; then
+    echo "=== lower / upper ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin lower Foo BAR baz" \
+      "$bin upper Foo BAR baz" \
+      "fish -N -c 'string lower Foo BAR baz'" \
+      "fish -N -c 'string upper Foo BAR baz'"
+fi
 
-echo "=== trim vs fish ==="
-hyperfine \
-  --warmup 10 \
-  --shell=none \
-  "$bin trim -c x xxhelloxx" \
-  "fish -N -c 'string trim -c x xxhelloxx'"
+if section trim; then
+    echo "=== trim (internal variants) ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin trim -c x xxhelloxx" \
+      "$bin trim -l -c x xxhelloxx" \
+      "$bin trim -r -c x xxhelloxx"
 
-echo "=== repeat ==="
-hyperfine \
-  --warmup 10 \
-  --shell=none \
-  "$bin repeat -n 5 abc" \
-  "$bin repeat -n 5 -m 10 abc" \
-  "fish -N -c 'string repeat -n 5 abc'" \
-  "fish -N -c 'string repeat -n 5 --max 10 abc'"
+    echo "=== trim vs fish ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin trim -c x xxhelloxx" \
+      "fish -N -c 'string trim -c x xxhelloxx'"
+fi
+
+if section match; then
+    echo "=== match ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin match 'foo*' foobar" \
+      "$bin match -r 'fo+' foobar" \
+      "$bin match -r -a 'o+' foobaroo" \
+      "$bin match -v 'foo' foo bar baz" \
+      "fish -N -c 'string match \"foo*\" foobar'" \
+      "fish -N -c 'string match -r fo+ foobar'" \
+      "fish -N -c 'string match -r -a o+ foobaroo'" \
+      "fish -N -c 'string match -v foo foo bar baz'"
+fi
+
+if section repeat; then
+    echo "=== repeat ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin repeat -n 5 abc" \
+      "$bin repeat -n 5 -m 10 abc" \
+      "fish -N -c 'string repeat -n 5 abc'" \
+      "fish -N -c 'string repeat -n 5 --max 10 abc'"
+fi

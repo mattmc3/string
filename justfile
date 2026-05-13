@@ -40,9 +40,9 @@ watch:
 watch-test:
     dotnet watch --project tests/String.Tests/String.Tests.csproj test
 
-# Run hyperfine benchmarks against the native binary
-benchmark:
-    bin/benchmark
+# Run hyperfine benchmarks against the native binary (optional filter: just benchmark match)
+benchmark filter="":
+    bin/benchmark {{filter}}
 
 # Format source code
 format:
