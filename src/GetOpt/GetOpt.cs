@@ -24,8 +24,9 @@ public class Getopt {
             var arg = args[i];
 
             if (arg == "--") {
-                for (int j = i + 1; j < args.Length; j++)
+                for (int j = i + 1; j < args.Length; j++) {
                     remaining.Add(args[j]);
+                }
                 break;
             }
             else if (arg.StartsWith("--") && arg.Length > 2) {
@@ -36,11 +37,13 @@ public class Getopt {
                     value = name[(eq + 1)..];
                     name = name[..eq];
                 }
-                if (!_longMap.TryGetValue(name, out bool takesArg))
+                if (!_longMap.TryGetValue(name, out bool takesArg)) {
                     throw new ArgumentException($"unknown option: --{name}");
+                }
                 if (takesArg && value is null) {
-                    if (++i >= args.Length)
+                    if (++i >= args.Length) {
                         throw new ArgumentException($"option --{name} requires an argument");
+                    }
                     value = args[i];
                 }
                 opts.Add(new OptArg($"--{name}", value));
@@ -50,8 +53,9 @@ public class Getopt {
                 int j = 1;
                 while (j < arg.Length) {
                     char c = arg[j];
-                    if (!_shortMap.TryGetValue(c, out ArgMode mode))
+                    if (!_shortMap.TryGetValue(c, out ArgMode mode)) {
                         throw new ArgumentException($"unknown option: -{c}");
+                    }
                     if (mode == ArgMode.Required) {
                         string value;
                         if (j + 1 < arg.Length) {
@@ -59,8 +63,9 @@ public class Getopt {
                             j = arg.Length;
                         }
                         else {
-                            if (++i >= args.Length)
+                            if (++i >= args.Length) {
                                 throw new ArgumentException($"option -{c} requires an argument");
+                            }
                             value = args[i];
                             j++;
                         }
@@ -81,8 +86,9 @@ public class Getopt {
             else {
                 remaining.Add(arg);
                 if (_posixMode) {
-                    for (int j = i + 1; j < args.Length; j++)
+                    for (int j = i + 1; j < args.Length; j++) {
                         remaining.Add(args[j]);
+                    }
                     break;
                 }
                 i++;
@@ -116,10 +122,12 @@ public class Getopt {
     private static Dictionary<string, bool> ParseLongSpec(IEnumerable<string> specs) {
         var map = new Dictionary<string, bool>();
         foreach (var spec in specs) {
-            if (spec.EndsWith('='))
+            if (spec.EndsWith('=')) {
                 map[spec[..^1]] = true;
-            else
+            }
+            else {
                 map[spec] = false;
+            }
         }
         return map;
     }
