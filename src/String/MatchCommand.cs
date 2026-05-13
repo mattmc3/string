@@ -30,19 +30,49 @@ public static class MatchCommand {
 
         var (opts, rest) = Parser.Parse(args);
 
-        if (opts.Any(o => o.Opt is "-h" or "--help")) { WriteHelp(output); return 0; }
+        if (opts.Any(o => o.Opt is "-h" or "--help")) {
+            WriteHelp(output);
+            return 0;
+        }
 
         foreach (var opt in opts) {
             switch (opt.Opt) {
-                case "-a": case "--all": all = true; break;
-                case "-e": case "--entire": entire = true; break;
-                case "-i": case "--ignore-case": ignoreCase = true; break;
-                case "-g": case "--groups-only": groupsOnly = true; break;
-                case "-n": case "--index": useIndex = true; break;
-                case "-r": case "--regex": useRegex = true; break;
-                case "-q": case "--quiet": quiet = true; break;
-                case "-v": case "--invert": invert = true; break;
-                case "-m": case "--max-matches": maxMatches = int.Parse(opt.Arg!); break;
+                case "-a":
+                case "--all":
+                    all = true;
+                    break;
+                case "-e":
+                case "--entire":
+                    entire = true;
+                    break;
+                case "-i":
+                case "--ignore-case":
+                    ignoreCase = true;
+                    break;
+                case "-g":
+                case "--groups-only":
+                    groupsOnly = true;
+                    break;
+                case "-n":
+                case "--index":
+                    useIndex = true;
+                    break;
+                case "-r":
+                case "--regex":
+                    useRegex = true;
+                    break;
+                case "-q":
+                case "--quiet":
+                    quiet = true;
+                    break;
+                case "-v":
+                case "--invert":
+                    invert = true;
+                    break;
+                case "-m":
+                case "--max-matches":
+                    maxMatches = int.Parse(opt.Arg!);
+                    break;
             }
         }
 
@@ -67,7 +97,9 @@ public static class MatchCommand {
         foreach (var s in strings) {
             if (invert) {
                 if (!re.IsMatch(s)) {
-                    if (!quiet) output.WriteLine(s);
+                    if (!quiet) {
+                        output.WriteLine(s);
+                    }
                     changes = true;
                 }
                 continue;
@@ -75,20 +107,30 @@ public static class MatchCommand {
 
             if (all) {
                 foreach (Match match in re.Matches(s)) {
-                    if (totalMatches >= maxMatches) break;
+                    if (totalMatches >= maxMatches) {
+                        break;
+                    }
                     bool had = WriteMatch(quiet ? null : output, match, s, groupsOnly, useIndex, entire);
-                    if (had) { changes = true; totalMatches++; }
+                    if (had) {
+                        changes = true;
+                        totalMatches++;
+                    }
                 }
             }
             else {
                 Match match = re.Match(s);
                 if (match.Success && totalMatches < maxMatches) {
                     bool had = WriteMatch(quiet ? null : output, match, s, groupsOnly, useIndex, entire);
-                    if (had) { changes = true; totalMatches++; }
+                    if (had) {
+                        changes = true;
+                        totalMatches++;
+                    }
                 }
             }
 
-            if (totalMatches >= maxMatches) break;
+            if (totalMatches >= maxMatches) {
+                break;
+            }
         }
 
         return changes ? 0 : 1;
@@ -99,7 +141,9 @@ public static class MatchCommand {
             bool any = false;
             for (int g = 1; g < match.Groups.Count; g++) {
                 Group group = match.Groups[g];
-                if (!group.Success) continue;
+                if (!group.Success) {
+                    continue;
+                }
                 output?.WriteLine(useIndex ? $"{group.Index + 1} {group.Length}" : group.Value);
                 any = true;
             }

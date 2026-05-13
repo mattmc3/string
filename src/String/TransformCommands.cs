@@ -15,7 +15,10 @@ public static class UpperCommand {
 
     public static int Run(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         var (opts, inputs) = Parser.Parse(args);
-        if (opts.Any(o => o.Opt is "-h" or "--help")) { WriteHelp(output); return 0; }
+        if (opts.Any(o => o.Opt is "-h" or "--help")) {
+            WriteHelp(output);
+            return 0;
+        }
         return TransformCommand.Run(opts, inputs, stdin, s => s.ToUpperInvariant(), output);
     }
 }
@@ -35,7 +38,10 @@ public static class LowerCommand {
 
     public static int Run(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         var (opts, inputs) = Parser.Parse(args);
-        if (opts.Any(o => o.Opt is "-h" or "--help")) { WriteHelp(output); return 0; }
+        if (opts.Any(o => o.Opt is "-h" or "--help")) {
+            WriteHelp(output);
+            return 0;
+        }
         return TransformCommand.Run(opts, inputs, stdin, s => s.ToLowerInvariant(), output);
     }
 }
@@ -47,8 +53,12 @@ internal static class TransformCommand {
         bool changes = false;
         foreach (var s in strings) {
             var result = transform(s);
-            if (!quiet) output.WriteLine(result);
-            if (result != s) changes = true;
+            if (!quiet) {
+                output.WriteLine(result);
+            }
+            if (result != s) {
+                changes = true;
+            }
         }
         return changes ? 0 : 1;
     }

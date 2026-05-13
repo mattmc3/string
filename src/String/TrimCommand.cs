@@ -22,18 +22,36 @@ public static class TrimCommand {
 
         var (opts, inputs) = Parser.Parse(args);
 
-        if (opts.Any(o => o.Opt is "-h" or "--help")) { WriteHelp(output); return 0; }
+        if (opts.Any(o => o.Opt is "-h" or "--help")) {
+            WriteHelp(output);
+            return 0;
+        }
 
         foreach (var opt in opts) {
             switch (opt.Opt) {
-                case "-l": case "--left": left = true; break;
-                case "-r": case "--right": right = true; break;
-                case "-q": case "--quiet": quiet = true; break;
-                case "-c": case "--chars": chars = opt.Arg; break;
+                case "-l":
+                case "--left":
+                    left = true;
+                    break;
+                case "-r":
+                case "--right":
+                    right = true;
+                    break;
+                case "-q":
+                case "--quiet":
+                    quiet = true;
+                    break;
+                case "-c":
+                case "--chars":
+                    chars = opt.Arg;
+                    break;
             }
         }
 
-        if (!left && !right) { left = true; right = true; }
+        if (!left && !right) {
+            left = true;
+            right = true;
+        }
 
         IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
         bool changes = false;
@@ -41,8 +59,12 @@ public static class TrimCommand {
             var result = chars is null
                 ? Trim(s, left, right)
                 : Trim(s, left, right, chars.ToCharArray());
-            if (!quiet) output.WriteLine(result);
-            if (result.Length < s.Length) changes = true;
+            if (!quiet) {
+                output.WriteLine(result);
+            }
+            if (result.Length < s.Length) {
+                changes = true;
+            }
         }
 
         return changes ? 0 : 1;

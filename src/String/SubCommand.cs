@@ -22,14 +22,29 @@ public static class SubCommand {
 
         var (opts, inputs) = Parser.Parse(args);
 
-        if (opts.Any(o => o.Opt is "-h" or "--help")) { WriteHelp(output); return 0; }
+        if (opts.Any(o => o.Opt is "-h" or "--help")) {
+            WriteHelp(output);
+            return 0;
+        }
 
         foreach (var opt in opts) {
             switch (opt.Opt) {
-                case "-s": case "--start": start = int.Parse(opt.Arg!); break;
-                case "-e": case "--end": end = int.Parse(opt.Arg!); break;
-                case "-l": case "--length": length = int.Parse(opt.Arg!); break;
-                case "-q": case "--quiet": quiet = true; break;
+                case "-s":
+                case "--start":
+                    start = int.Parse(opt.Arg!);
+                    break;
+                case "-e":
+                case "--end":
+                    end = int.Parse(opt.Arg!);
+                    break;
+                case "-l":
+                case "--length":
+                    length = int.Parse(opt.Arg!);
+                    break;
+                case "-q":
+                case "--quiet":
+                    quiet = true;
+                    break;
             }
         }
 
@@ -38,8 +53,12 @@ public static class SubCommand {
 
         foreach (var s in strings) {
             var result = Substring(s, start, end, length);
-            if (result.Length > 0) any = true;
-            if (!quiet) output.WriteLine(result);
+            if (result.Length > 0) {
+                any = true;
+            }
+            if (!quiet) {
+                output.WriteLine(result);
+            }
         }
 
         return any ? 0 : 1;
@@ -59,12 +78,16 @@ public static class SubCommand {
         int endIdx = end.HasValue ? ToIndex(end.Value, len) + 1 : len;
         endIdx = Math.Clamp(endIdx, 0, len);
 
-        if (endIdx <= startIdx) return "";
+        if (endIdx <= startIdx) {
+            return "";
+        }
         return s.Substring(startIdx, endIdx - startIdx);
     }
 
     private static int ToIndex(int pos, int len) {
-        if (pos >= 1) return pos - 1;  // 1-based to 0-based
-        return len + pos;              // negative: from end (-1 = last)
+        if (pos >= 1) {
+            return pos - 1;  // 1-based to 0-based
+        }
+        return len + pos;    // negative: from end (-1 = last)
     }
 }

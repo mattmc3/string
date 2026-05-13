@@ -21,12 +21,21 @@ public static class LengthCommand {
 
         var (opts, inputs) = Parser.Parse(args);
 
-        if (opts.Any(o => o.Opt is "-h" or "--help")) { WriteHelp(output); return 0; }
+        if (opts.Any(o => o.Opt is "-h" or "--help")) {
+            WriteHelp(output);
+            return 0;
+        }
 
         foreach (var opt in opts) {
             switch (opt.Opt) {
-                case "-q": case "--quiet": quiet = true; break;
-                case "-V": case "--visible": visible = true; break;
+                case "-q":
+                case "--quiet":
+                    quiet = true;
+                    break;
+                case "-V":
+                case "--visible":
+                    visible = true;
+                    break;
             }
         }
 
@@ -35,8 +44,12 @@ public static class LengthCommand {
         foreach (var s in strings) {
             var measured = visible ? AnsiEscape.Replace(s, "") : s;
             int len = measured.Length;
-            if (len > 0) any = true;
-            if (!quiet) output.WriteLine(len);
+            if (len > 0) {
+                any = true;
+            }
+            if (!quiet) {
+                output.WriteLine(len);
+            }
         }
 
         return any ? 0 : 1;
