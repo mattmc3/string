@@ -21,15 +21,22 @@ public static class StringApp {
         };
     }
 
+    private static readonly Getopt SimpleParser = new("q", ["quiet"]);
+
     private static int RunSimple(string[] args, Func<string, string> transform, TextWriter output, TextWriter error) {
-        if (args.Length == 0) {
-            error.WriteLine("error: no strings provided");
-            return 1;
+        var (opts, inputs) = SimpleParser.Parse(args);
+        bool quiet = opts.Any(o => o.Opt is "-q" or "--quiet");
+        bool changes = false;
+        foreach (var s in inputs) {
+            var result = transform(s);
+            if (!quiet) {
+                output.WriteLine(result);
+            }
+            if (result != s) {
+                changes = true;
+            }
         }
-        foreach (var s in args) {
-            output.WriteLine(transform(s));
-        }
-        return 0;
+        return changes ? 0 : 1;
     }
 
     private static int RunTrim(string[] args, TextWriter output, TextWriter error) {
@@ -53,7 +60,7 @@ public static class StringApp {
             right = true;
         }
 
-        bool any = false;
+        bool changes = false;
         foreach (var s in inputs) {
             var result = chars is null
                 ? Trim(s, left, right)
@@ -62,11 +69,11 @@ public static class StringApp {
                 output.WriteLine(result);
             }
             if (result.Length < s.Length) {
-                any = true;
+                changes = true;
             }
         }
 
-        return any ? 0 : 1;
+        return changes ? 0 : 1;
     }
 
     private static string Trim(string s, bool left, bool right) =>
