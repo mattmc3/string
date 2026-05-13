@@ -7,9 +7,35 @@ just publish-native
 
 bin="./publish/string"
 
+echo "=== lower / upper ==="
 hyperfine \
   --warmup 10 \
   --shell=none \
   "$bin lower Foo BAR baz" \
   "$bin upper Foo BAR baz" \
-  "fish -N -c 'string lower Foo BAR baz'"
+  "fish -N -c 'string lower Foo BAR baz'" \
+  "fish -N -c 'string upper Foo BAR baz'"
+
+echo "=== trim (internal variants) ==="
+hyperfine \
+  --warmup 10 \
+  --shell=none \
+  "$bin trim -c x xxhelloxx" \
+  "$bin trim -l -c x xxhelloxx" \
+  "$bin trim -r -c x xxhelloxx"
+
+echo "=== trim vs fish ==="
+hyperfine \
+  --warmup 10 \
+  --shell=none \
+  "$bin trim -c x xxhelloxx" \
+  "fish -N -c 'string trim -c x xxhelloxx'"
+
+echo "=== repeat ==="
+hyperfine \
+  --warmup 10 \
+  --shell=none \
+  "$bin repeat -n 5 abc" \
+  "$bin repeat -n 5 -m 10 abc" \
+  "fish -N -c 'string repeat -n 5 abc'" \
+  "fish -N -c 'string repeat -n 5 --max 10 abc'"
