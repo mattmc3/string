@@ -34,8 +34,14 @@ publish-native:
 
 # Tag a release (e.g. just release 1.2.3)
 release version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ ! "{{version}}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Error: version must be X.Y.Z (got '{{version}}')"
+        exit 1
+    fi
     git tag v{{version}}
-    git push origin --tags
+    echo "Run: git push origin --tags"
 
 # Publish AOT binary for a specific RID (e.g. just publish-rid osx-arm64)
 publish-rid rid:
