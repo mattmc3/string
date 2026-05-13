@@ -31,11 +31,19 @@ public static class SubCommand {
             switch (opt.Opt) {
                 case "-s":
                 case "--start":
-                    start = int.Parse(opt.Arg!);
+                    if (!long.TryParse(opt.Arg!, out long sv)) {
+                        error.WriteLine($"error: sub: Invalid start value '{opt.Arg}'");
+                        return 1;
+                    }
+                    start = sv > int.MaxValue ? int.MaxValue : sv < int.MinValue ? int.MinValue : (int)sv;
                     break;
                 case "-e":
                 case "--end":
-                    end = int.Parse(opt.Arg!);
+                    if (!long.TryParse(opt.Arg!, out long ev)) {
+                        error.WriteLine($"error: sub: Invalid end value '{opt.Arg}'");
+                        return 1;
+                    }
+                    end = ev > int.MaxValue ? int.MaxValue : ev < int.MinValue ? int.MinValue : (int)ev;
                     break;
                 case "-l":
                 case "--length":
@@ -46,6 +54,23 @@ public static class SubCommand {
                     quiet = true;
                     break;
             }
+        }
+
+        if (start == 0) {
+            error.WriteLine("error: sub: Invalid start value '0'");
+            return 1;
+        }
+        if (end == 0) {
+            error.WriteLine("error: sub: Invalid end value '0'");
+            return 1;
+        }
+        if (length.HasValue && length.Value < 0) {
+            error.WriteLine($"error: sub: Invalid length value '{length}'");
+            return 1;
+        }
+        if (end.HasValue && length.HasValue) {
+            error.WriteLine("error: sub: invalid option combination, --end and --length are mutually exclusive");
+            return 1;
         }
 
         IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
@@ -75,7 +100,9 @@ public static class SubCommand {
             return s.Substring(startIdx, take);
         }
 
-        int endIdx = end.HasValue ? ToIndex(end.Value, len) + 1 : len;
+        int endIdx = end.HasValue
+            ? (end.Value >= 1 ? end.Value : Math.Clamp(len + end.Value, 0, len))
+            : len;
         endIdx = Math.Clamp(endIdx, 0, len);
 
         if (endIdx <= startIdx) {
@@ -84,10 +111,8 @@ public static class SubCommand {
         return s.Substring(startIdx, endIdx - startIdx);
     }
 
-    private static int ToIndex(int pos, int len) {
-        if (pos >= 1) {
-            return pos - 1;  // 1-based to 0-based
-        }
-        return len + pos;    // negative: from end (-1 = last)
+    private static int ToIndex(long pos, int len) {
+        long idx = pos >= 1 ? pos - 1 : len + pos;
+        return (int)Math.Clamp(idx, 0, len);
     }
 }

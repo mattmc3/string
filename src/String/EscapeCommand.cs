@@ -40,11 +40,20 @@ public static class EscapeCommand {
             }
         }
 
+        if (!EscapeCore.ValidStyles.Contains(style)) {
+            error.WriteLine($"error: escape: Invalid escape style '{style}'");
+            return 1;
+        }
+
         IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
         bool any = false;
 
         foreach (var s in strings) {
-            output.WriteLine(EscapeCore.Escape(s, style, noQuoted));
+            string? result = EscapeCore.Escape(s, style, noQuoted, error);
+            if (result == null) {
+                return 1;
+            }
+            output.WriteLine(result);
             any = true;
         }
 
@@ -81,6 +90,11 @@ public static class UnescapeCommand {
             }
         }
 
+        if (!EscapeCore.ValidStyles.Contains(style)) {
+            error.WriteLine($"error: unescape: Invalid style value '{style}'");
+            return 1;
+        }
+
         IEnumerable<string> strings = inputs.Count > 0 ? inputs : CommandUtils.ReadLines(stdin);
         bool any = false;
 
@@ -99,8 +113,13 @@ public static class UnescapeCommand {
 
 internal static class EscapeCore {
     private static readonly Regex VarPattern = new(@"_([0-9A-Fa-f]+)_", RegexOptions.Compiled);
+    internal static readonly HashSet<string> ValidStyles = ["script", "url", "html", "regex", "var"];
 
-    internal static string Escape(string s, string style, bool noQuoted) {
+    internal static string? Escape(string s, string style, bool noQuoted, TextWriter error) {
+        if (!ValidStyles.Contains(style)) {
+            error.WriteLine($"error: escape: Invalid escape style '{style}'");
+            return null;
+        }
         return style switch {
             "url" => Uri.EscapeDataString(s),
             "html" => WebUtility.HtmlEncode(s),
@@ -111,6 +130,10 @@ internal static class EscapeCore {
     }
 
     internal static string? Unescape(string s, string style, TextWriter error) {
+        if (!ValidStyles.Contains(style)) {
+            error.WriteLine($"error: unescape: Invalid style value '{style}'");
+            return null;
+        }
         try {
             return style switch {
                 "url" => Uri.UnescapeDataString(s),

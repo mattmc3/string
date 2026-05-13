@@ -23,16 +23,16 @@ public class ShortenTests : TestBase {
     }
 
     [Fact]
-    public void Shorten_no_change_returns_1() {
+    public void Shorten_no_change_returns_0() {
         var (exit, stdout, _) = Run("shorten", "-m", "20", "hello");
-        Assert.Equal(1, exit);
+        Assert.Equal(0, exit);
         Assert.Equal(["hello"], Lines(stdout));
     }
 
     [Fact]
     public void Shorten_exact_length_unchanged() {
         var (exit, _, _) = Run("shorten", "-m", "5", "hello");
-        Assert.Equal(1, exit);
+        Assert.Equal(0, exit);
     }
 
     [Fact]

@@ -33,7 +33,7 @@ public class SubTests : TestBase {
     public void Sub_end_from_end() {
         var (exit, stdout, _) = Run("sub", "-e", "-2", "hello");
         Assert.Equal(0, exit);
-        Assert.Equal(["hell"], Lines(stdout));
+        Assert.Equal(["hel"], Lines(stdout));
     }
 
     [Fact]
@@ -51,10 +51,10 @@ public class SubTests : TestBase {
     }
 
     [Fact]
-    public void Sub_length_overrides_end() {
-        var (exit, stdout, _) = Run("sub", "-e", "5", "-l", "2", "hello");
-        Assert.Equal(0, exit);
-        Assert.Equal(["he"], Lines(stdout));
+    public void Sub_end_and_length_mutually_exclusive() {
+        var (exit, _, stderr) = Run("sub", "-e", "5", "-l", "2", "hello");
+        Assert.Equal(1, exit);
+        Assert.Contains("mutually exclusive", stderr);
     }
 
     [Fact]

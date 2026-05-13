@@ -6,9 +6,7 @@ public static class StringApp {
 
     public static int Run(string[] args, TextReader stdin, TextWriter output, TextWriter error) {
         if (args.Length < 1) {
-            error.WriteLine("Usage: string <command> [options] [STRING ...]");
-            error.WriteLine("Commands: upper, lower, trim, repeat, match");
-            error.WriteLine("Use 'string --help' for more information.");
+            error.WriteLine("string: missing subcommand");
             return 1;
         }
 
@@ -20,8 +18,9 @@ public static class StringApp {
 
         var rest = args[1..];
 
-        return command switch {
-            "upper" => UpperCommand.Run(rest, stdin, output, error),
+        try {
+            return command switch {
+                "upper" => UpperCommand.Run(rest, stdin, output, error),
             "lower" => LowerCommand.Run(rest, stdin, output, error),
             "length" => LengthCommand.Run(rest, stdin, output, error),
             "trim" => TrimCommand.Run(rest, stdin, output, error),
@@ -37,9 +36,14 @@ public static class StringApp {
             "match" => MatchCommand.Run(rest, stdin, output, error),
             "collect" => CollectCommand.Run(rest, stdin, output, error),
             "escape" => EscapeCommand.Run(rest, stdin, output, error),
-            "unescape" => UnescapeCommand.Run(rest, stdin, output, error),
-            _ => UnknownCommand(command, error),
-        };
+                "unescape" => UnescapeCommand.Run(rest, stdin, output, error),
+                _ => UnknownCommand(command, error),
+            };
+        }
+        catch (ArgumentException ex) {
+            error.WriteLine($"error: {ex.Message}");
+            return 1;
+        }
     }
 
     public static void WriteHelp(TextWriter output) {
@@ -68,7 +72,7 @@ public static class StringApp {
     }
 
     private static int UnknownCommand(string command, TextWriter error) {
-        error.WriteLine($"error: unknown command '{command}'");
+        error.WriteLine($"string {command}: invalid subcommand");
         return 1;
     }
 }

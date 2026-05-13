@@ -40,6 +40,9 @@ public class Getopt {
                 if (!_longMap.TryGetValue(name, out bool takesArg)) {
                     throw new ArgumentException($"unknown option: --{name}");
                 }
+                if (!takesArg && value is not null) {
+                    throw new ArgumentException($"option '--{name}' does not take an argument");
+                }
                 if (takesArg && value is null) {
                     if (++i >= args.Length) {
                         throw new ArgumentException($"option --{name} requires an argument");

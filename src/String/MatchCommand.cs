@@ -71,11 +71,30 @@ public static class MatchCommand {
                     break;
                 case "-m":
                 case "--max-matches":
-                    maxMatches = int.Parse(opt.Arg!);
+                    if (!int.TryParse(opt.Arg!, out maxMatches) || maxMatches <= 0) {
+                        error.WriteLine($"error: match: Invalid max matches value '{opt.Arg}'");
+                        return 1;
+                    }
                     break;
             }
         }
 
+        if (invert && groupsOnly) {
+            error.WriteLine("error: match: invalid option combination, --invert and --groups-only are mutually exclusive");
+            return 1;
+        }
+        if (entire && useIndex) {
+            error.WriteLine("error: match: invalid option combination, --entire and --index are mutually exclusive");
+            return 1;
+        }
+        if (entire && groupsOnly) {
+            error.WriteLine("error: match: invalid option combination, --entire and --groups-only are mutually exclusive");
+            return 1;
+        }
+        if (maxMatches == 0) {
+            error.WriteLine($"error: match: Invalid max matches value '0'");
+            return 1;
+        }
         if (rest.Count == 0) {
             error.WriteLine("error: match requires a pattern");
             return 1;
@@ -151,6 +170,11 @@ public static class MatchCommand {
         }
 
         output?.WriteLine(useIndex ? $"{match.Index + 1} {match.Length}" : entire ? source : match.Value);
+        if (!useIndex && match.Groups.Count > 1) {
+            for (int g = 1; g < match.Groups.Count; g++) {
+                output?.WriteLine(match.Groups[g].Value);
+            }
+        }
         return true;
     }
 

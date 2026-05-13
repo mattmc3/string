@@ -55,9 +55,17 @@ public static class ReplaceCommand {
                     break;
                 case "-m":
                 case "--max-matches":
-                    maxMatches = int.Parse(opt.Arg!);
+                    if (!int.TryParse(opt.Arg!, out maxMatches)) {
+                        error.WriteLine($"error: replace: Invalid max matches value '{opt.Arg}'");
+                        return 1;
+                    }
                     break;
             }
+        }
+
+        if (maxMatches < 0) {
+            error.WriteLine($"error: replace: Invalid max matches value '{maxMatches}'");
+            return 1;
         }
 
         if (rest.Count < 2) {

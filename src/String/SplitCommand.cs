@@ -72,7 +72,13 @@ internal static class SplitCore {
                 case "-n": case "--no-empty": noEmpty = true; break;
                 case "-r": case "--right": right = true; break;
                 case "-a": case "--allow-empty": allowEmpty = true; break;
-                case "-m": case "--max": max = int.Parse(opt.Arg!); break;
+                case "-m":
+                case "--max":
+                    if (!int.TryParse(opt.Arg!, out max) || max < 0) {
+                        error.WriteLine($"error: split: Invalid max value '{opt.Arg}'");
+                        return 1;
+                    }
+                    break;
                 case "-f":
                 case "--fields":
                     fields = ParseFields(opt.Arg!, error);
@@ -81,6 +87,11 @@ internal static class SplitCore {
                     }
                     break;
             }
+        }
+
+        if (allowEmpty && fields == null) {
+            error.WriteLine("error: split: --allow-empty is only valid with --fields");
+            return 1;
         }
 
         IEnumerable<string> strings = inputs.Count > 0
@@ -190,6 +201,14 @@ internal static class SplitCore {
                     error.WriteLine($"error: invalid field spec: {part}");
                     return null;
                 }
+                if (from > to) {
+                    error.WriteLine($"error: split: Invalid range value for field '{part}'");
+                    return null;
+                }
+                if (from == 0 || to == 0) {
+                    error.WriteLine($"error: split: Invalid fields value '{part}'");
+                    return null;
+                }
                 for (int i = from; i <= to; i++) {
                     fields.Add(i);
                 }
@@ -197,6 +216,10 @@ internal static class SplitCore {
             else {
                 if (!int.TryParse(part, out int f)) {
                     error.WriteLine($"error: invalid field spec: {part}");
+                    return null;
+                }
+                if (f == 0) {
+                    error.WriteLine($"error: split: Invalid fields value '{part}'");
                     return null;
                 }
                 fields.Add(f);

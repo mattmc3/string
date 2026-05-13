@@ -19,7 +19,7 @@ public class PadTests : TestBase {
     public void Pad_center_centers_string() {
         var (exit, stdout, _) = Run("pad", "-C", "-w", "7", "hi");
         Assert.Equal(0, exit);
-        Assert.Equal(["  hi   "], Lines(stdout));
+        Assert.Equal(["   hi  "], Lines(stdout));
     }
 
     [Fact]
@@ -38,14 +38,15 @@ public class PadTests : TestBase {
 
     [Fact]
     public void Pad_string_at_width_unchanged() {
-        var (exit, _, _) = Run("pad", "-w", "5", "hello");
-        Assert.Equal(1, exit);
+        var (exit, stdout, _) = Run("pad", "-w", "5", "hello");
+        Assert.Equal(0, exit);
+        Assert.Equal(["hello"], Lines(stdout));
     }
 
     [Fact]
     public void Pad_string_longer_than_width_unchanged() {
         var (exit, stdout, _) = Run("pad", "-w", "3", "hello");
-        Assert.Equal(1, exit);
+        Assert.Equal(0, exit);
         Assert.Equal(["hello"], Lines(stdout));
     }
 

@@ -33,11 +33,17 @@ public static class RepeatCommand {
             switch (opt.Opt) {
                 case "-n":
                 case "--count":
-                    count = int.Parse(opt.Arg!);
+                    if (!int.TryParse(opt.Arg!, out count)) {
+                        error.WriteLine($"error: repeat: Invalid count value '{opt.Arg}'");
+                        return 1;
+                    }
                     break;
                 case "-m":
                 case "--max":
-                    max = int.Parse(opt.Arg!);
+                    if (!int.TryParse(opt.Arg!, out max) || max < 0) {
+                        error.WriteLine($"error: repeat: Invalid max value '{opt.Arg}'");
+                        return 1;
+                    }
                     break;
                 case "-N":
                 case "--no-newline":
@@ -50,7 +56,13 @@ public static class RepeatCommand {
             }
         }
 
-        if (count <= 0) {
+        if (count < 0) {
+            error.WriteLine($"error: repeat: Invalid count value '{count}'");
+            return 1;
+        }
+        // max-only mode: no -n given, but -m given
+        bool maxOnly = count == 0 && max >= 0;
+        if (count == 0 && !maxOnly) {
             return 1;
         }
 
@@ -61,7 +73,10 @@ public static class RepeatCommand {
 
         bool changes = false;
         for (int i = 0; i < strings.Count; i++) {
-            var repeated = string.Concat(Enumerable.Repeat(strings[i], count));
+            int effectiveCount = maxOnly
+                ? (strings[i].Length > 0 ? (max / strings[i].Length) + 1 : 0)
+                : count;
+            var repeated = string.Concat(Enumerable.Repeat(strings[i], effectiveCount));
             if (max >= 0 && repeated.Length > max) {
                 repeated = repeated[..max];
             }

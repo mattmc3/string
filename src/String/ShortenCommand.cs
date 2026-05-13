@@ -49,7 +49,11 @@ public static class ShortenCommand {
                     break;
                 case "-m":
                 case "--max":
-                    max = int.Parse(opt.Arg!);
+                    if (!int.TryParse(opt.Arg!, out int parsedMax) || parsedMax < 0) {
+                        error.WriteLine($"error: shorten: Invalid max value '{opt.Arg}'");
+                        return 1;
+                    }
+                    max = parsedMax == 0 ? int.MaxValue : parsedMax;
                     break;
             }
         }
@@ -76,7 +80,10 @@ public static class ShortenCommand {
             }
         }
 
-        return changes ? 0 : 1;
+        if (quiet) {
+            return changes ? 0 : 1;
+        }
+        return strings.Count > 0 ? 0 : 1;
     }
 
     private static string Shorten(string s, int max, string ellipsis, bool left) {

@@ -1,7 +1,7 @@
 using GetOpt;
 
 public static class PadCommand {
-    private static readonly Getopt Parser = new("hrCc:w:", ["help", "right", "center", "char=", "width="]);
+    private static readonly Getopt Parser = new("hrCc:w:", ["help", "right", "center", "char=", "chars=", "width="]);
 
     public static void WriteHelp(TextWriter output) {
         output.WriteLine("Usage: string pad [-h] [-r] [-C] [(-c | --char) CHAR] [(-w | --width) INTEGER] [STRING ...]");
@@ -40,6 +40,7 @@ public static class PadCommand {
                     break;
                 case "-c":
                 case "--char":
+                case "--chars":
                     if (opt.Arg!.Length != 1) {
                         error.WriteLine("error: pad character must be exactly one character");
                         return 1;
@@ -49,6 +50,10 @@ public static class PadCommand {
                 case "-w":
                 case "--width":
                     width = int.Parse(opt.Arg!);
+                    if (width < 0) {
+                        error.WriteLine($"error: pad: Invalid width value '{opt.Arg}'");
+                        return 1;
+                    }
                     break;
             }
         }
@@ -59,7 +64,6 @@ public static class PadCommand {
         }
 
         int targetWidth = width ?? strings.Max(s => s.Length);
-        bool changes = false;
 
         foreach (var s in strings) {
             string result;
@@ -69,7 +73,7 @@ public static class PadCommand {
             else {
                 int total = targetWidth - s.Length;
                 if (center) {
-                    int leftPad = total / 2;
+                    int leftPad = right ? total / 2 : (total + 1) / 2;
                     int rightPad = total - leftPad;
                     result = new string(padChar, leftPad) + s + new string(padChar, rightPad);
                 }
@@ -79,11 +83,10 @@ public static class PadCommand {
                 else {
                     result = new string(padChar, total) + s;
                 }
-                changes = true;
             }
             output.WriteLine(result);
         }
 
-        return changes ? 0 : 1;
+        return 0;
     }
 }

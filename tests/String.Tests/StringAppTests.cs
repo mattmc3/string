@@ -5,14 +5,14 @@ public class StringAppTests : TestBase {
     public void No_args_returns_error() {
         var (exit, _, stderr) = Run();
         Assert.Equal(1, exit);
-        Assert.Contains("Usage:", stderr);
+        Assert.Contains("string: missing subcommand", stderr);
     }
 
     [Fact]
     public void Unknown_command_returns_error() {
         var (exit, _, stderr) = Run("flip", "hello");
         Assert.Equal(1, exit);
-        Assert.Contains("unknown command", stderr);
+        Assert.Contains("string flip: invalid subcommand", stderr);
     }
 
     [Fact]
