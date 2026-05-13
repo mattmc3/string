@@ -36,6 +36,8 @@ public static class StringApp {
             "join0" => Join0Command.Run(rest, stdin, output, error),
             "match" => MatchCommand.Run(rest, stdin, output, error),
             "collect" => CollectCommand.Run(rest, stdin, output, error),
+            "escape" => EscapeCommand.Run(rest, stdin, output, error),
+            "unescape" => UnescapeCommand.Run(rest, stdin, output, error),
             _ => UnknownCommand(command, error),
         };
     }
@@ -59,6 +61,8 @@ public static class StringApp {
         output.WriteLine("  join0    Join strings with NUL");
         output.WriteLine("  match    Match strings against a pattern");
         output.WriteLine("  collect  Collect strings into a single output");
+        output.WriteLine("  escape   Escape strings for use in various contexts");
+        output.WriteLine("  unescape Unescape strings from various encoded formats");
         output.WriteLine();
         output.WriteLine("Use 'string <command> --help' for more information about a specific command.");
     }
