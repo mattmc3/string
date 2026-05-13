@@ -23,6 +23,7 @@ public static class StringApp {
         return command switch {
             "upper" => UpperCommand.Run(rest, stdin, output, error),
             "lower" => LowerCommand.Run(rest, stdin, output, error),
+            "length" => LengthCommand.Run(rest, stdin, output, error),
             "trim" => TrimCommand.Run(rest, stdin, output, error),
             "repeat" => RepeatCommand.Run(rest, stdin, output, error),
             "match" => MatchCommand.Run(rest, stdin, output, error),
@@ -36,6 +37,7 @@ public static class StringApp {
         output.WriteLine("Commands:");
         output.WriteLine("  upper    Convert strings to uppercase");
         output.WriteLine("  lower    Convert strings to lowercase");
+        output.WriteLine("  length   Print string lengths");
         output.WriteLine("  trim     Remove leading/trailing whitespace or characters");
         output.WriteLine("  repeat   Repeat strings");
         output.WriteLine("  match    Match strings against a pattern");
