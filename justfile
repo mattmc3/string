@@ -32,6 +32,11 @@ publish:
 publish-native:
     dotnet publish src/String/String.csproj -c Release --self-contained
 
+# Tag a release (e.g. just release 1.2.3)
+release version:
+    git tag v{{version}}
+    git push origin --tags
+
 # Publish AOT binary for a specific RID (e.g. just publish-rid osx-arm64)
 publish-rid rid:
     dotnet publish src/String/String.csproj -c Release --self-contained -r {{rid}} -o out/
