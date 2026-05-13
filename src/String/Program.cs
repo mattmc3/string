@@ -27,6 +27,7 @@ public static class StringApp {
             "trim" => TrimCommand.Run(rest, stdin, output, error),
             "repeat" => RepeatCommand.Run(rest, stdin, output, error),
             "pad" => PadCommand.Run(rest, stdin, output, error),
+            "sub" => SubCommand.Run(rest, stdin, output, error),
             "match" => MatchCommand.Run(rest, stdin, output, error),
             _ => UnknownCommand(command, error),
         };
@@ -42,6 +43,7 @@ public static class StringApp {
         output.WriteLine("  trim     Remove leading/trailing whitespace or characters");
         output.WriteLine("  repeat   Repeat strings");
         output.WriteLine("  pad      Pad strings to a fixed width");
+        output.WriteLine("  sub      Extract substrings");
         output.WriteLine("  match    Match strings against a pattern");
         output.WriteLine();
         output.WriteLine("Use 'string <command> --help' for more information about a specific command.");
