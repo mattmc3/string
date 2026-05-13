@@ -28,6 +28,10 @@ public static class StringApp {
             "repeat" => RepeatCommand.Run(rest, stdin, output, error),
             "pad" => PadCommand.Run(rest, stdin, output, error),
             "sub" => SubCommand.Run(rest, stdin, output, error),
+            "split" => SplitCommand.Run(rest, stdin, output, error),
+            "split0" => Split0Command.Run(rest, stdin, output, error),
+            "join" => JoinCommand.Run(rest, stdin, output, error),
+            "join0" => Join0Command.Run(rest, stdin, output, error),
             "match" => MatchCommand.Run(rest, stdin, output, error),
             _ => UnknownCommand(command, error),
         };
@@ -44,6 +48,10 @@ public static class StringApp {
         output.WriteLine("  repeat   Repeat strings");
         output.WriteLine("  pad      Pad strings to a fixed width");
         output.WriteLine("  sub      Extract substrings");
+        output.WriteLine("  split    Split strings by delimiter");
+        output.WriteLine("  split0   Split strings by NUL");
+        output.WriteLine("  join     Join strings with delimiter");
+        output.WriteLine("  join0    Join strings with NUL");
         output.WriteLine("  match    Match strings against a pattern");
         output.WriteLine();
         output.WriteLine("Use 'string <command> --help' for more information about a specific command.");
