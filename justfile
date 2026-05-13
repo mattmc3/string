@@ -40,6 +40,10 @@ watch:
 watch-test:
     dotnet watch --project tests/String.Tests/String.Tests.csproj test
 
+# Format source code
+format:
+    dotnet format
+
 # Update outdated packages
 update:
     dotnet outdated --upgrade
