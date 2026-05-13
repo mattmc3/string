@@ -40,6 +40,10 @@ watch:
 watch-test:
     dotnet watch --project tests/String.Tests/String.Tests.csproj test
 
+# Run hyperfine benchmarks against the native binary
+benchmark:
+    bin/benchmark
+
 # Format source code
 format:
     dotnet format

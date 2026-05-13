@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+just publish-native
+
+bin="./publish/string"
+
+hyperfine \
+  --warmup 10 \
+  --shell=none \
+  "$bin lower Foo BAR baz" \
+  "$bin upper Foo BAR baz" \
+  "fish -N -c 'string lower Foo BAR baz'"
