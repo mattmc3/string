@@ -66,3 +66,108 @@ if section repeat; then
       "fish -N -c 'string repeat -n 5 abc'" \
       "fish -N -c 'string repeat -n 5 --max 10 abc'"
 fi
+
+if section length; then
+    echo "=== length ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin length hello" \
+      "$bin length hello world foo" \
+      "fish -N -c 'string length hello'" \
+      "fish -N -c 'string length hello world foo'"
+fi
+
+if section sub; then
+    echo "=== sub ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin sub -s 2 -l 3 hello" \
+      "$bin sub -s -3 hello" \
+      "fish -N -c 'string sub -s 2 -l 3 hello'" \
+      "fish -N -c 'string sub -s -3 hello'"
+fi
+
+if section split; then
+    echo "=== split ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin split , a,b,c" \
+      "$bin split -r -m 1 , a,b,c" \
+      "fish -N -c 'string split , a,b,c'" \
+      "fish -N -c 'string split -r -m 1 , a,b,c'"
+fi
+
+if section join; then
+    echo "=== join ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin join , a b c" \
+      "$bin join0 a b c" \
+      "fish -N -c 'string join , a b c'" \
+      "fish -N -c 'string join0 a b c'"
+fi
+
+if section replace; then
+    echo "=== replace ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin replace foo bar 'foo baz foo'" \
+      "$bin replace -a foo bar 'foo baz foo'" \
+      "$bin replace -r 'f(o+)' 'b\1' foobar" \
+      "fish -N -c 'string replace foo bar foobar'" \
+      "fish -N -c 'string replace -a foo bar \"foo baz foo\"'" \
+      "fish -N -c 'string replace -r fo+ bar foobar'"
+fi
+
+if section pad; then
+    echo "=== pad ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin pad -w 10 foo" \
+      "$bin pad -w 10 -c = foo" \
+      "$bin pad -w 10 -C foo" \
+      "fish -N -c 'string pad -w 10 foo'" \
+      "fish -N -c 'string pad -w 10 -c = foo'" \
+      "fish -N -c 'string pad -w 10 -C foo'"
+fi
+
+if section shorten; then
+    echo "=== shorten ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin shorten -m 8 'hello world'" \
+      "$bin shorten -m 8 --char '~' 'hello world'" \
+      "fish -N -c 'string shorten -m 8 \"hello world\"'" \
+      "fish -N -c 'string shorten -m 8 --char ~ \"hello world\"'"
+fi
+
+if section escape; then
+    echo "=== escape ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin escape 'hello world'" \
+      "$bin escape --style=url 'hello world'" \
+      "$bin unescape 'hello\ world'" \
+      "fish -N -c 'string escape \"hello world\"'" \
+      "fish -N -c 'string escape --style=url \"hello world\"'" \
+      "fish -N -c 'string unescape \"hello\\\\ world\"'"
+fi
+
+if section collect; then
+    echo "=== collect ==="
+    hyperfine \
+      --warmup 10 \
+      --shell=none \
+      "$bin collect foo bar baz" \
+      "$bin collect -N foo bar baz" \
+      "fish -N -c 'string collect foo bar baz'" \
+      "fish -N -c 'string collect -N foo bar baz'"
+fi
