@@ -86,36 +86,64 @@ internal static class VisualWidth {
 
     // Take chars from left of s with cumulative visual width == targetWidth.
     internal static string TakeLeft(string s, int targetWidth) {
-        int w = 0, i = 0;
+        int w = 0, i = 0, cutAt = 0;
         while (i < s.Length) {
             char c = s[i];
-            if (c == '\b') {
+            if (c == '\x1b') {
+                int end = SkipAnsi(s, i);
+                if (w < targetWidth) cutAt = end;
+                i = end;
+            }
+            else if (c == '\b') {
                 w = Math.Max(0, w - 1);
+                if (w < targetWidth) cutAt = i + 1;
                 i++;
             }
             else if (char.IsControl(c)) {
+                if (w < targetWidth) cutAt = i + 1;
                 i++;
             }
             else {
                 if (w >= targetWidth) break;
                 w++;
                 i++;
+                cutAt = i;
             }
         }
-        return s[..i];
+        return s[..cutAt];
     }
 
     // Take chars from right of s with cumulative visual width == targetWidth.
     internal static string TakeRight(string s, int targetWidth) {
-        int w = 0, i = s.Length;
-        while (i > 0) {
-            char c = s[i - 1];
-            if (!char.IsControl(c)) {
-                if (w >= targetWidth) break;
-                w++;
+        var segs = new List<(int Start, int End, int Width)>();
+        int pos = 0;
+        while (pos < s.Length) {
+            char c = s[pos];
+            if (c == '\x1b') {
+                int end = SkipAnsi(s, pos);
+                segs.Add((pos, end, 0));
+                pos = end;
             }
-            i--;
+            else if (c == '\b') {
+                segs.Add((pos, pos + 1, -1));
+                pos++;
+            }
+            else if (char.IsControl(c)) {
+                segs.Add((pos, pos + 1, 0));
+                pos++;
+            }
+            else {
+                segs.Add((pos, pos + 1, 1));
+                pos++;
+            }
         }
-        return s[i..];
+        int w = 0;
+        for (int j = segs.Count - 1; j >= 0; j--) {
+            int sw = segs[j].Width;
+            if (sw <= 0) continue;
+            if (w >= targetWidth) return s[segs[j].End..];
+            w += sw;
+        }
+        return s;
     }
 }

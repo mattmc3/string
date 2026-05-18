@@ -88,6 +88,16 @@ public class VisualWidthTests {
         Assert.Equal("\afoo", VisualWidth.TakeLeft("\afoobar", 3));
     }
 
+    [Fact]
+    public void TakeLeft_ansi_sequence_not_counted() {
+        Assert.Equal("\x1b[31mhel", VisualWidth.TakeLeft("\x1b[31mhello\x1b[0m", 3));
+    }
+
+    [Fact]
+    public void TakeLeft_ansi_sequence_zero_width_included() {
+        Assert.Equal("\x1b[31mhello", VisualWidth.TakeLeft("\x1b[31mhello\x1b[0m", 5));
+    }
+
     // VisualWidth.TakeRight -- suffix with target visual width
 
     [Fact]
@@ -103,5 +113,15 @@ public class VisualWidthTests {
     [Fact]
     public void TakeRight_full_string() {
         Assert.Equal("foo", VisualWidth.TakeRight("foo", 3));
+    }
+
+    [Fact]
+    public void TakeRight_ansi_sequence_not_counted() {
+        Assert.Equal("llo\x1b[0m", VisualWidth.TakeRight("\x1b[31mhello\x1b[0m", 3));
+    }
+
+    [Fact]
+    public void TakeRight_ansi_only_prefix() {
+        Assert.Equal("\x1b[31mhello\x1b[0m", VisualWidth.TakeRight("\x1b[31mhello\x1b[0m", 5));
     }
 }
